@@ -124,10 +124,10 @@ CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"user_id" uuid NOT NULL,
-	"token" text NOT NULL,
+	"token_hash" text NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "sessions_token_unique" UNIQUE("token")
+	CONSTRAINT "sessions_token_hash_unique" UNIQUE("token_hash")
 );
 --> statement-breakpoint
 CREATE TABLE "students" (
@@ -220,7 +220,7 @@ CREATE INDEX "import_batches_school_idx" ON "import_batches" USING btree ("schoo
 CREATE INDEX "import_rows_school_idx" ON "import_rows" USING btree ("school_id");--> statement-breakpoint
 CREATE INDEX "import_rows_batch_idx" ON "import_rows" USING btree ("batch_id");--> statement-breakpoint
 CREATE INDEX "sessions_school_idx" ON "sessions" USING btree ("school_id");--> statement-breakpoint
-CREATE INDEX "sessions_token_idx" ON "sessions" USING btree ("token");--> statement-breakpoint
+CREATE INDEX "sessions_token_hash_idx" ON "sessions" USING btree ("token_hash");--> statement-breakpoint
 CREATE INDEX "students_school_idx" ON "students" USING btree ("school_id");--> statement-breakpoint
 CREATE INDEX "students_status_idx" ON "students" USING btree ("school_id","status");--> statement-breakpoint
 CREATE INDEX "users_school_idx" ON "users" USING btree ("school_id");

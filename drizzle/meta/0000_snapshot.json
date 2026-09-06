@@ -1,5 +1,5 @@
 {
-  "id": "350bc0b1-0d89-49ea-bfe0-e6f0f516fc5f",
+  "id": "2560626f-9150-4867-9563-71e6ceae55e8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1167,8 +1167,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "token": {
-          "name": "token",
+        "token_hash": {
+          "name": "token_hash",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -1203,11 +1203,11 @@
           "method": "btree",
           "with": {}
         },
-        "sessions_token_idx": {
-          "name": "sessions_token_idx",
+        "sessions_token_hash_idx": {
+          "name": "sessions_token_hash_idx",
           "columns": [
             {
-              "expression": "token",
+              "expression": "token_hash",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1249,11 +1249,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "sessions_token_unique": {
-          "name": "sessions_token_unique",
+        "sessions_token_hash_unique": {
+          "name": "sessions_token_hash_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "token"
+            "token_hash"
           ]
         }
       },

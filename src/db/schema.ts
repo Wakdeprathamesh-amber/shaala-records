@@ -132,7 +132,9 @@ export const sessions = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id),
-    token: text("token").notNull().unique(),
+    /** SHA-256 of the cookie token, never the token itself. A leaked database
+     *  dump must not hand the reader a set of live sessions. */
+    tokenHash: text("token_hash").notNull().unique(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -140,7 +142,7 @@ export const sessions = pgTable(
   },
   (t) => [
     index("sessions_school_idx").on(t.schoolId),
-    index("sessions_token_idx").on(t.token),
+    index("sessions_token_hash_idx").on(t.tokenHash),
   ],
 );
 

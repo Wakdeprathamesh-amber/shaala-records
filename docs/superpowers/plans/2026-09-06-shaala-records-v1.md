@@ -6,9 +6,24 @@
 
 **Architecture:** Next.js App Router monolith, server-rendered, Postgres via Drizzle. Every table carries `school_id`; all data access flows through a tenant-scoped repository layer that makes an unscoped query a type error. Document issuance is transactional and snapshots its payload, so an issued certificate never changes when the student record is later edited. Government export column mappings live in versioned JSON config, not code, because the templates change by government resolution. PDFs are rendered by a long-lived headless Chromium from React-rendered HTML — which is why this deploys to a Linux box, not a serverless platform.
 
-**Tech Stack:** Next.js 15 (App Router) · TypeScript strict · Tailwind v4 + shadcn/ui · Drizzle ORM · PostgreSQL 18 · Zod · Playwright (PDF + E2E) · ExcelJS · Vitest · Docker Compose
+**Tech Stack:** Next.js 16 (App Router) · TypeScript strict · Tailwind v4 + shadcn/ui · Drizzle ORM · PostgreSQL 18 (Supabase managed) · Zod 4 · Playwright (PDF + E2E) · ExcelJS · Vitest
 
 **Reference:** [PRD.md](../../../PRD.md) — Section 6 defines scope, Section 7 the data model, Section 9 the non-functional bar.
+
+---
+
+## Environment corrections (2026-09-06)
+
+Three things differ from this plan as first written, discovered during Milestone 0:
+
+- **Next.js 16, not 15.** `middleware.ts` is renamed `proxy.ts` (same behaviour,
+  same `config.matcher`). Verified in `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`.
+- **Postgres is Supabase, not Docker.** The build host had no disk for a Docker VM
+  and its 28 GB image store. Supabase's Session pooler (port 5432, IPv4) is used —
+  the direct connection is IPv6-only and the transaction pooler cannot migrate.
+  Supabase provides *only* Postgres: auth remains our own, per PRD principle 7.
+- **Zod 4.** Syntax differs from v3: `z.email()` not `z.string().email()`, and
+  `{ error: ... }` not `{ message: ... }`.
 
 ---
 
@@ -26,7 +41,7 @@ The standard format inlines complete code in every step. For a build of this siz
 ## File structure
 
 ```
-docker-compose.yml           Postgres 18 for local dev
+drizzle/                     Generated migrations (committed)
 Dockerfile                   Production image: node:22-slim + Chromium
 AGENTS.md                    Conventions every worker reads first
 drizzle.config.ts
@@ -93,11 +108,11 @@ tests/e2e/                   Playwright
 
 ### Task 0.1: Repo, tooling, Postgres
 
-**Files:** `package.json`, `tsconfig.json`, `next.config.ts`, `docker-compose.yml`, `.env.example`, `.gitignore`
+**Files:** `package.json`, `tsconfig.json`, `next.config.ts`, `.env.example`, `.gitignore`
 
-- [ ] Scaffold Next.js 15 App Router, TypeScript strict, Tailwind v4, ESLint
+- [x] Scaffold Next.js 16 App Router, TypeScript strict, Tailwind v4, ESLint
 - [ ] Add: `drizzle-orm`, `drizzle-kit`, `postgres`, `zod`, `bcryptjs`, `exceljs`, `playwright`, `vitest`, `@testing-library/react`
-- [ ] `docker-compose.yml` running `postgres:18-alpine` on 5433, volume `shaala_pgdata`
+- [x] Supabase (South Asia / Mumbai) as managed Postgres — see `docs/SETUP-SUPABASE.md`
 - [ ] `.env.example` with `DATABASE_URL`, `SESSION_SECRET`, `NODE_ENV`
 - [ ] Verify: `docker compose up -d && npm run dev` serves on :3000
 - [ ] Commit: `chore: scaffold next.js app with postgres and tooling`
@@ -162,13 +177,13 @@ export async function requireCtx(minRole?: Role): Promise<Ctx>;
 
 ### Task 0.4: Auth
 
-**Files:** Create `src/lib/auth/session.ts`, `src/lib/auth/password.ts`, `src/app/(auth)/login/page.tsx`, `src/middleware.ts`
+**Files:** Create `src/lib/auth/session.ts`, `src/lib/auth/password.ts`, `src/app/(auth)/login/page.tsx`, `src/proxy.ts`
 
 Server-side sessions in Postgres, httpOnly SameSite=Lax cookie, bcrypt cost 12. No OAuth, no third-party auth service — PRD principle 7.
 
 - [ ] `createSession(userId)`, `getSession()`, `destroySession()`, 30-day expiry, rolling refresh
 - [ ] Login page: phone or email + password, bilingual labels, error states that say what to fix
-- [ ] `middleware.ts` redirects unauthenticated requests under `/(app)` to `/login`
+- [ ] `proxy.ts` redirects unauthenticated requests under `/(app)` to `/login`
 - [ ] Test: `tests/unit/auth.test.ts` — hash round-trip, expired session rejected, session bound to one school
 - [ ] Commit: `feat(auth): add password sessions and login`
 
