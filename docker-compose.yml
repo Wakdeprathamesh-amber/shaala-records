@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: shaala_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shaala
+      POSTGRES_PASSWORD: shaala_dev
+      POSTGRES_DB: shaala
+    ports:
+      - "5433:5432"
+    volumes:
+      - shaala_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shaala -d shaala"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  shaala_pgdata:
