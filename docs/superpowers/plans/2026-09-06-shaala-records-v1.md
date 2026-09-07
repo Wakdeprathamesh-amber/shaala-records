@@ -227,13 +227,17 @@ export function numberToMarathiWords(n: number): string;
 export function dateToMarathiWords(d: Date): string;
 ```
 
-- [ ] **Step 1:** Write the failing test with at least 40 cases, including every irregular decade boundary (२९ एकोणतीस, ३९ एकोणचाळीस, ४९ एकोणपन्नास, ५९ एकोणसाठ, ६९ एकोणसत्तर, ७९ एकोणऐंशी, ८९ एकोणनव्वद, ९९ नव्याण्णव), zero, and years 1990–2020 inclusive
-- [ ] **Step 2:** Run `npx vitest run tests/unit/marathi-numbers.test.ts` — expect FAIL
-- [ ] **Step 3:** Build the 0–99 lookup table in `data.ts`, compose hundreds and thousands in `numbers.ts`
-- [ ] **Step 4:** Run tests — expect all PASS
-- [ ] **Step 5:** Commit: `feat(marathi): add number and date to words for statutory documents`
+- [x] **Step 1:** Write the failing test with at least 40 cases, including every irregular decade boundary (२९ एकोणतीस, ३९ एकोणचाळीस, ४९ एकोणपन्नास, ५९ एकोणसाठ, ६९ एकोणसत्तर, ७९ एकोणऐंशी, ८९ एकोणनव्वद, ९९ नव्याण्णव), zero, and years 1990–2020 inclusive
+- [x] **Step 2:** Run `npx vitest run tests/unit/marathi-numbers.test.ts` — expect FAIL
+- [x] **Step 3:** Build the 0–99 lookup table in `data.ts`, compose hundreds and thousands in `numbers.ts`
+- [x] **Step 4:** Run tests — expect all PASS (118 cases)
+- [x] **Step 5:** Commit: `feat(marathi): add number and date to words for statutory documents`
 
-**Verification beyond tests:** the output for 15 sample dates must be checked by a Marathi reader before the first LC is issued. Note this in the task's completion comment.
+**Verification beyond tests:** ⚠ OUTSTANDING. 15 sample dates and the eight
+`एकोण-` forms are laid out for sign-off in [docs/MARATHI-AUDIT.md](../../MARATHI-AUDIT.md),
+along with four open questions I could not resolve. The 118 passing tests prove
+only that the code matches the table — they cannot prove the table is right.
+**This blocks production issuance of any LC.**
 
 ---
 
