@@ -27,12 +27,16 @@ const SRC = join(import.meta.dirname, "..", "..", "src");
  *   the document row, the LC detail, the status change and the audit entry
  *   must all commit or all fail together, and repository functions each open
  *   their own transaction, so they cannot be composed into one.
+ * - `domain/import/commit.ts` is the same: two hundred students and their
+ *   enrolments land together or not at all. A half-imported register is
+ *   worse than an empty one, because nobody knows which half.
  *
  * Every exception is re-checked below: it must still scope by tenant.
  */
 const TRANSACTIONAL_EXCEPTIONS = [
   "lib/auth/session.ts",
   "domain/documents/issue.ts",
+  "domain/import/commit.ts",
 ];
 
 function relPath(file: string): string {
