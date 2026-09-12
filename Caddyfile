@@ -1,0 +1,26 @@
+# Automatic TLS from Let's Encrypt. Replace the hostname and email.
+{$SHAALA_DOMAIN:shaala.example.org} {
+	tls {$SHAALA_TLS_EMAIL:admin@example.org}
+
+	encode zstd gzip
+
+	# The register holds children's personal data. These are cheap and
+	# there is no reason not to.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+
+	# Certificates and government files must never be cached by an
+	# intermediary. The app sets this too; this is belt and braces.
+	@private path /api/documents/* /api/exports/*
+	header @private Cache-Control "private, no-store"
+
+	reverse_proxy app:3000 {
+		health_uri /api/health
+		health_interval 30s
+	}
+}

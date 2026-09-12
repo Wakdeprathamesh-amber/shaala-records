@@ -1,0 +1,55 @@
+# Production stack: app + Caddy. Postgres is managed (Supabase), so it is not
+# here — see docs/RUNBOOK.md if you move it in-house.
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    expose:
+      - "3000"
+    # Chromium needs more than the default 64MB of shared memory or it
+    # crashes partway through rendering a batch of ID cards.
+    shm_size: "512mb"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - uploads:/app/uploads
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "apk add --no-cache curl aws-cli >/dev/null 2>&1;
+       while true; do
+         sh /backup.sh || echo 'backup failed';
+         sleep 86400;
+       done"
+
+volumes:
+  uploads:
+  backups:
+  caddy_data:
+  caddy_config:

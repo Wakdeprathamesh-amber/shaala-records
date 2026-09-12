@@ -36,6 +36,15 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals, the login POST target, and static files.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  /**
+   * Everything except Next internals, static files, and /api/health.
+   *
+   * Health must be exempt: the container healthcheck and Caddy's upstream
+   * probe carry no session cookie, so with the proxy in front of it they get
+   * a 307 to /login and the container never reports healthy. It stays
+   * unauthenticated by design and returns nothing but { ok }.
+   */
+  matcher: [
+    "/((?!api/health|_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|pdf)$).*)",
+  ],
 };
