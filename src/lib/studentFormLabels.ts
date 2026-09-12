@@ -1,0 +1,50 @@
+import type { T } from "@/lib/i18n";
+
+/** The StudentForm is a Client Component, so every string it renders has to be
+ *  passed in rather than looked up — a translator closure cannot cross the
+ *  server/client boundary. */
+export function studentFormLabels(t: T): Record<string, string> {
+  return {
+    identity: t("section.identity"),
+    birth: t("section.birth"),
+    family: t("section.family"),
+    social: t("section.social"),
+    admission: t("section.admission"),
+    enrollment: t("section.enrollment"),
+    gr: t("students.gr"),
+    autoAssigned: t("field.optional"),
+    apaar: t("field.apaarId"),
+    studentName: t("students.name"),
+    middleName: t("field.middleName"),
+    surname: t("field.lastName"),
+    marathi: t("field.marathi"),
+    english: t("field.english"),
+    gender: t("students.gender"),
+    male: t("gender.male"),
+    female: t("gender.female"),
+    other: t("gender.other"),
+    bloodGroup: t("field.bloodGroup"),
+    dob: t("students.dob"),
+    birthVillage: t("field.birthVillage"),
+    taluka: t("field.birthTaluka"),
+    district: t("field.birthDistrict"),
+    state: t("field.birthState"),
+    motherName: t("field.motherName"),
+    fatherName: t("field.fatherName"),
+    category: t("field.category"),
+    caste: t("field.caste"),
+    subCaste: t("field.subCaste"),
+    religion: t("field.religion"),
+    motherTongue: t("field.motherTongue"),
+    nationality: t("field.nationality"),
+    admissionDate: t("field.admissionDate"),
+    admissionClass: t("field.admissionClass"),
+    previousSchool: t("field.previousSchool"),
+    lastClassPassed: t("field.lastClassPassed"),
+    class: t("students.class"),
+    division: t("students.division"),
+    rollNo: t("students.rollNo"),
+    save: t("action.save"),
+    cancel: t("action.cancel"),
+  };
+}
