@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "प्रवेश — Sign in · Shaala Records" };
+export const metadata: Metadata = { title: "प्रवेश — Sign in" };
 
 export default async function LoginPage({
   searchParams,

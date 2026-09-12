@@ -162,8 +162,12 @@ async function main() {
         dob: `${birthYear}-${String((i % 12) + 1).padStart(2, "0")}-${String((i % 27) + 1).padStart(2, "0")}`,
         gender: sex,
         motherNameMr: `सौ. ${mMr.slice(0, 3)}ाबाई ${lMr}`,
+        // Every fifth record is left missing its English parent names, which
+        // is what the UDISE pre-flight is meant to catch. Without a few real
+        // gaps the export screen looks like it does nothing.
+        motherNameEn: i % 5 === 0 ? null : `${mEn.slice(0, 3)}abai ${lEn}`,
         fatherNameMr: `${mMr} ${lMr}`,
-        fatherNameEn: `${mEn} ${lEn}`,
+        fatherNameEn: i % 5 === 0 ? null : `${mEn} ${lEn}`,
         category: CATEGORIES[i % CATEGORIES.length],
         religion: "हिंदू",
         nationality: "Indian",

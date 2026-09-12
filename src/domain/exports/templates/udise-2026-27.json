@@ -1,0 +1,40 @@
+{
+  "id": "udise-2026-27",
+  "label": "UDISE+ / Integrated SARAL — Student, 2026-27",
+  "sheet": "Students",
+  "headerRow": 1,
+  "note": "PROVISIONAL. Column headers are a best guess until the real UDISE+ workbook for 2026-27 is obtained. Because the mapping is data rather than code, replacing them is a one-file change and needs no deploy. See PRD section 14 item 1.",
+  "maps": {
+    "categoryCodes": {
+      "OPEN": "1",
+      "SC": "2",
+      "ST": "3",
+      "OBC": "4",
+      "VJNT": "5",
+      "SBC": "6",
+      "EWS": "7"
+    },
+    "genderCodes": { "male": "1", "female": "2", "other": "3" },
+    "yesNo": { "true": "Y", "false": "N" }
+  },
+  "columns": [
+    { "header": "APAAR ID", "source": "student.apaarId", "required": true, "rule": "digits:12" },
+    { "header": "Student Name", "source": "student.nameEn", "required": true, "transform": "upper", "rule": "maxlen:100" },
+    { "header": "Student Name (Local)", "source": "student.nameMr", "required": false },
+    { "header": "Father Name", "source": "student.fatherNameEn", "required": true, "transform": "upper", "rule": "maxlen:100" },
+    { "header": "Mother Name", "source": "student.motherNameEn", "required": true, "transform": "upper", "rule": "maxlen:100" },
+    { "header": "Date of Birth", "source": "student.dob", "required": true, "transform": "date:DD/MM/YYYY" },
+    { "header": "Gender", "source": "student.gender", "required": true, "transform": "map:genderCodes" },
+    { "header": "Social Category", "source": "student.category", "required": true, "transform": "map:categoryCodes" },
+    { "header": "Religion", "source": "student.religion", "required": false },
+    { "header": "Mother Tongue", "source": "student.motherTongue", "required": false },
+    { "header": "Class", "source": "enrollment.class", "required": true },
+    { "header": "Section", "source": "enrollment.division", "required": false },
+    { "header": "Roll Number", "source": "enrollment.rollNo", "required": false },
+    { "header": "Admission Number", "source": "student.grNumber", "required": true },
+    { "header": "Admission Date", "source": "student.admissionDate", "required": true, "transform": "date:DD/MM/YYYY" },
+    { "header": "Aadhaar Verified", "source": "student.aadhaarVerified", "required": false, "transform": "map:yesNo" },
+    { "header": "Blood Group", "source": "student.bloodGroup", "required": false },
+    { "header": "UDISE Code", "source": "school.udiseCode", "required": true, "rule": "digits:11" }
+  ]
+}
