@@ -15,13 +15,36 @@ import { join, relative, sep } from "node:path";
 
 const SRC = join(import.meta.dirname, "..", "..", "src");
 
-/** Only these may touch the query builder directly. */
+/**
+ * Files permitted to touch the query builder directly.
+ *
+ * Repositories are the normal home for queries. The two other entries are
+ * deliberate, documented exceptions rather than convenience:
+ *
+ * - `lib/auth/session.ts` runs before a Ctx exists — the session lookup is
+ *   what produces one.
+ * - `domain/documents/issue.ts` is a transaction boundary. Serial allocation,
+ *   the document row, the LC detail, the status change and the audit entry
+ *   must all commit or all fail together, and repository functions each open
+ *   their own transaction, so they cannot be composed into one.
+ *
+ * Every exception is re-checked below: it must still scope by tenant.
+ */
+const TRANSACTIONAL_EXCEPTIONS = [
+  "lib/auth/session.ts",
+  "domain/documents/issue.ts",
+];
+
+function relPath(file: string): string {
+  return relative(SRC, file).split(sep).join("/");
+}
+
 function isAllowed(file: string): boolean {
-  const rel = relative(SRC, file).split(sep).join("/");
+  const rel = relPath(file);
   return (
     rel.startsWith("db/") ||
     /^domain\/[^/]+\/repo\.ts$/.test(rel) ||
-    rel === "lib/auth/session.ts" // sessions are looked up before a Ctx exists
+    TRANSACTIONAL_EXCEPTIONS.includes(rel)
   );
 }
 
@@ -59,5 +82,23 @@ describe("no unscoped queries", () => {
   it("checks files it can actually see (guards against a broken glob)", () => {
     // If the walk silently returned nothing, the test above would pass vacuously.
     expect(walk(SRC).length).toBeGreaterThan(0);
+  });
+
+  it("still requires every exception to scope by tenant", () => {
+    // An exception buys the right to hold its own transaction, not the right
+    // to skip the WHERE clause. session.ts is excluded because it is what
+    // establishes the tenant in the first place.
+    const mustScope = TRANSACTIONAL_EXCEPTIONS.filter((f) => f !== "lib/auth/session.ts");
+
+    for (const rel of mustScope) {
+      const source = readFileSync(join(SRC, rel), "utf8");
+      expect(source, `${rel} must filter by tenant`).toMatch(/scoped\(|ctx\.schoolId/);
+    }
+  });
+
+  it("keeps the exception list short", () => {
+    // If this number starts climbing, the tenant rule is being eroded one
+    // convenient exception at a time.
+    expect(TRANSACTIONAL_EXCEPTIONS.length).toBeLessThanOrEqual(3);
   });
 });
