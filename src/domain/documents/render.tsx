@@ -1,12 +1,23 @@
 import "server-only";
 
-import { renderToStaticMarkup } from "react-dom/server";
-
 import { printDocument, renderPdf } from "@/lib/pdf";
 import type { DocumentPayload } from "./issue";
 import { LeavingCertificate, LC_CSS } from "@/templates/lc";
 import { BonafideCertificate, BONAFIDE_CSS } from "@/templates/bonafide";
 import { IdCardSheet, ID_CARD_CSS } from "@/templates/id-card";
+
+/**
+ * Loaded at call time, not imported at the top.
+ *
+ * Next.js refuses a static `react-dom/server` import anywhere reachable from
+ * the app bundle — it cannot tell that this module only ever runs inside a
+ * Route Handler. Deferring the import keeps it out of the module graph the
+ * bundler analyses, while still running on the server where it belongs.
+ */
+async function renderMarkup(node: React.ReactElement): Promise<string> {
+  const { renderToStaticMarkup } = await import("react-dom/server");
+  return renderToStaticMarkup(node);
+}
 
 export type RenderChoices = {
   /** A5 halves the paper cost for a bonafide; the LC is usually A4. */
@@ -23,21 +34,21 @@ export async function documentHtml(
   switch (payload.docType) {
     case "lc":
       return printDocument(
-        renderToStaticMarkup(
+        await renderMarkup(
           <LeavingCertificate p={payload} suppressHeader={choices.suppressHeader} />,
         ),
         LC_CSS,
       );
     case "bonafide":
       return printDocument(
-        renderToStaticMarkup(
+        await renderMarkup(
           <BonafideCertificate p={payload} suppressHeader={choices.suppressHeader} />,
         ),
         BONAFIDE_CSS,
       );
     case "id_card":
       return printDocument(
-        renderToStaticMarkup(<IdCardSheet cards={[payload]} />),
+        await renderMarkup(<IdCardSheet cards={[payload]} />),
         ID_CARD_CSS,
       );
   }
@@ -71,21 +82,20 @@ export async function renderIdCardSheets(cards: DocumentPayload[]): Promise<Buff
   const pages: DocumentPayload[][] = [];
   for (let i = 0; i < cards.length; i += 8) pages.push(cards.slice(i, i + 8));
 
-  const html = await printDocument(
-    pages
-      .map((page, i) =>
-        renderToStaticMarkup(
-          <div
-            key={i}
-            style={i < pages.length - 1 ? { pageBreakAfter: "always" } : undefined}
-          >
-            <IdCardSheet cards={page} />
-          </div>,
-        ),
-      )
-      .join(""),
-    ID_CARD_CSS,
+  const markup = await Promise.all(
+    pages.map((page, i) =>
+      renderMarkup(
+        <div
+          key={i}
+          style={i < pages.length - 1 ? { pageBreakAfter: "always" } : undefined}
+        >
+          <IdCardSheet cards={page} />
+        </div>,
+      ),
+    ),
   );
+
+  const html = await printDocument(markup.join(""), ID_CARD_CSS);
 
   return renderPdf(html, { format: "A4" });
 }

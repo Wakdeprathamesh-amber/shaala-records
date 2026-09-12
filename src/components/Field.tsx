@@ -18,6 +18,7 @@ export function Field({
   options,
   placeholder,
   inputMode,
+  onValueChange,
 }: {
   name: string;
   label: string;
@@ -29,6 +30,9 @@ export function Field({
   options?: readonly { value: string; label: string }[];
   placeholder?: string;
   inputMode?: "numeric" | "text";
+  /** Observe edits without making the input controlled — the uncontrolled
+   *  form is what lets echoed defaults survive React 19's post-action reset. */
+  onValueChange?: (value: string) => void;
 }) {
   const id = `f-${name}`;
   return (
@@ -57,6 +61,7 @@ export function Field({
           defaultValue={defaultValue ?? ""}
           required={required}
           aria-invalid={Boolean(error)}
+          onChange={onValueChange ? (e) => onValueChange(e.target.value) : undefined}
           className={INPUT}
         >
           <option value="">—</option>
@@ -75,6 +80,7 @@ export function Field({
           defaultValue={defaultValue ?? ""}
           required={required}
           placeholder={placeholder}
+          onChange={onValueChange ? (e) => onValueChange(e.target.value) : undefined}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           className={INPUT}
