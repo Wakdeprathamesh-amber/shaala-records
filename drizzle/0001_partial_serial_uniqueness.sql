@@ -1,0 +1,2 @@
+ALTER TABLE "documents" DROP CONSTRAINT "documents_school_type_serial_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX "documents_school_type_serial_uq" ON "documents" USING btree ("school_id","doc_type","serial_no") WHERE "documents"."is_duplicate" = false;

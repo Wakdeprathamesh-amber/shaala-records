@@ -10,6 +10,7 @@
  *   2. Nothing that has legal weight is ever hard-deleted. Students carry a
  *      status; issued documents are immutable.
  */
+import { sql } from "drizzle-orm";
 import {
   boolean,
   date,
@@ -21,6 +22,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -275,8 +277,18 @@ export const documents = pgTable(
   (t) => [
     index("documents_school_idx").on(t.schoolId),
     index("documents_student_idx").on(t.schoolId, t.studentId),
-    // Statutory serial continuity: no gaps, no reuse, per school per type.
-    unique("documents_school_type_serial_uq").on(t.schoolId, t.docType, t.serialNo),
+    /**
+     * Statutory serial continuity — but only among originals.
+     *
+     * A reprint is not a new certificate; it is the same certificate printed
+     * again, and it carries the original's serial so the register shows one
+     * document issued once rather than two documents disagreeing. That makes
+     * the uniqueness rule conditional: originals may not share a serial,
+     * duplicates deliberately do.
+     */
+    uniqueIndex("documents_school_type_serial_uq")
+      .on(t.schoolId, t.docType, t.serialNo)
+      .where(sql`${t.isDuplicate} = false`),
   ],
 );
 
