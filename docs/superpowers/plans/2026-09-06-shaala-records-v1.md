@@ -6,7 +6,7 @@
 
 **Architecture:** Next.js App Router monolith, server-rendered, Postgres via Drizzle. Every table carries `school_id`; all data access flows through a tenant-scoped repository layer that makes an unscoped query a type error. Document issuance is transactional and snapshots its payload, so an issued certificate never changes when the student record is later edited. Government export column mappings live in versioned JSON config, not code, because the templates change by government resolution. PDFs are rendered by a long-lived headless Chromium from React-rendered HTML — which is why this deploys to a Linux box, not a serverless platform.
 
-**Tech Stack:** Next.js 16 (App Router) · TypeScript strict · Tailwind v4 + shadcn/ui · Drizzle ORM · PostgreSQL 18 (Supabase managed) · Zod 4 · Playwright (PDF + E2E) · ExcelJS · Vitest
+**Tech Stack:** Next.js 16 (App Router) · TypeScript strict · Tailwind v4 + shadcn/ui · Drizzle ORM · PostgreSQL 17.6 (Supabase managed) · Zod 4 · Playwright (PDF + E2E) · ExcelJS · Vitest
 
 **Reference:** [PRD.md](../../../PRD.md) — Section 6 defines scope, Section 7 the data model, Section 9 the non-functional bar.
 
@@ -24,6 +24,9 @@ Three things differ from this plan as first written, discovered during Milestone
   Supabase provides *only* Postgres: auth remains our own, per PRD principle 7.
 - **Zod 4.** Syntax differs from v3: `z.email()` not `z.string().email()`, and
   `{ error: ... }` not `{ message: ... }`.
+- **Postgres 17.6, not 18.** Supabase's current managed version. The schema uses
+  no 18-only features, so this costs nothing — but `uuidv7()` is unavailable if
+  we ever want it, and `gen_random_uuid()` stays the id default.
 
 ---
 
