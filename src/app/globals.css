@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Devanagari-capable system stack. Deliberately not a web font: the school's
+   connection is unreliable and every one of these platforms already ships a
+   Devanagari face. Print fidelity is a separate concern — the PDF renderer
+   bundles Noto Sans Devanagari locally, where the exact shapes matter. */
+:root {
+  --font-ui:
+    system-ui, -apple-system, "Segoe UI", Roboto,
+    "Nirmala UI", "Noto Sans Devanagari", "Mangal", "Shobhika",
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  font-family: var(--font-ui);
+}
+
+/* Devanagari sits taller than Latin; a little extra leading stops matras
+   from colliding with the line above. */
+:lang(mr) {
+  line-height: 1.7;
+}
