@@ -117,28 +117,33 @@ it("writes sample certificates to out/", async () => {
     })),
     ID_CARD_CSS, "A4");
 
-  // The onboarding page, forced light — a PDF is printed, and dark wastes toner.
+  // The two client-facing pages, forced light — a PDF gets printed, and a
+  // dark page wastes toner.
+  const SCRATCH = "/private/tmp/claude-502/-Users-amberuser-Desktop-My-Projects-School-ERP/2af7019c-8ed1-4aa4-abac-fa429420452c/scratchpad";
   const { chromium } = await import("playwright");
-  const page = readFileSync(
-    "/private/tmp/claude-502/-Users-amberuser-Desktop-My-Projects-School-ERP/2af7019c-8ed1-4aa4-abac-fa429420452c/scratchpad/onboarding.html",
-    "utf8",
-  );
   const browser = await chromium.launch({ args: ["--no-sandbox"] });
-  const tab = await browser.newPage();
-  await tab.setContent(
-    `<!doctype html><html lang="mr" data-theme="light"><head><meta charset="utf-8"></head><body>${page}</body></html>`,
-    { waitUntil: "networkidle" },
-  );
-  await tab.evaluate(() => (document as unknown as { fonts: FontFaceSet }).fonts.ready);
-  writeFileSync("out/0-Shaala-Records-Overview.pdf", await tab.pdf({
-    format: "A4", printBackground: true,
-    margin: { top: "14mm", bottom: "16mm", left: "14mm", right: "14mm" },
-    displayHeaderFooter: true,
-    headerTemplate: "<div></div>",
-    footerTemplate:
-      '<div style="width:100%;font-size:8px;color:#888;padding:0 14mm;display:flex;justify-content:space-between;">' +
-      '<span>शाळा रेकॉर्ड्स · Shaala Records</span><span class="pageNumber"></span></div>',
-  }));
+
+  for (const [src, name] of [
+    ["onboarding.html", "0-Shaala-Records-Overview"],
+    ["fields.html", "7-Student-Record-Fields"],
+  ] as const) {
+    const tab = await browser.newPage();
+    await tab.setContent(
+      `<!doctype html><html lang="mr" data-theme="light"><head><meta charset="utf-8"></head><body>${readFileSync(`${SCRATCH}/${src}`, "utf8")}</body></html>`,
+      { waitUntil: "networkidle" },
+    );
+    await tab.evaluate(() => (document as unknown as { fonts: FontFaceSet }).fonts.ready);
+    writeFileSync(`out/${name}.pdf`, await tab.pdf({
+      format: "A4", printBackground: true,
+      margin: { top: "14mm", bottom: "16mm", left: "14mm", right: "14mm" },
+      displayHeaderFooter: true,
+      headerTemplate: "<div></div>",
+      footerTemplate:
+        '<div style="width:100%;font-size:8px;color:#888;padding:0 14mm;display:flex;justify-content:space-between;">' +
+        '<span>शाळा रेकॉर्ड्स · Shaala Records</span><span class="pageNumber"></span></div>',
+    }));
+    await tab.close();
+    console.log(`  ✓ out/${name}.pdf`);
+  }
   await browser.close();
-  console.log("  ✓ out/0-Shaala-Records-Overview.pdf");
 }, 180_000);
