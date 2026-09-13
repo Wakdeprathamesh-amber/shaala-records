@@ -1,5 +1,6 @@
 import type { DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
+import { hisF } from "@/lib/marathi/gender";
 
 import {
   DuplicateMark,
@@ -104,25 +105,26 @@ export function LeavingCertificate({
           <Field label={L("११. मातृभाषा", "11. Mother tongue")} value={p.motherTongue} />
           <Field label={L("१२. शाळेत प्रवेश घेतल्याचा दिनांक", "12. Date of admission")} value={figures(p.admissionDate)} />
           <Field label={L("१३. प्रवेशाच्या वेळची इयत्ता", "13. Class at admission")} value={p.admissionClass} />
-          <Field label={L("१४. मागील शाळेत उत्तीर्ण इयत्ता", "14. Last class passed (previous school)")} value={p.lastClassPassed} />
+          <Field label={L("१४. मागील शाळेचे नाव", "14. Name of previous school")} value={p.previousSchool} />
+          <Field label={L("१५. मागील शाळेत उत्तीर्ण इयत्ता", "15. Last class passed there")} value={p.lastClassPassed} />
           <Field
-            label={L("१५. शाळा सोडतेवेळची इयत्ता", "15. Class at the time of leaving")}
+            label={L("१६. शाळा सोडतेवेळची इयत्ता", "16. Class at the time of leaving")}
             value={
               p.currentClass
                 ? `${p.currentClass}${p.currentDivision ? ` (${p.currentDivision})` : ""}`
                 : "—"
             }
           />
-          <Field label={L("१६. शाळा सोडल्याचा दिनांक", "16. Date of leaving")} value={figures(p.dateOfLeaving)} />
-          <Field label={L("१७. शाळा सोडण्याचे कारण", "17. Reason for leaving")} value={p.reasonMr} />
-          <Field label={L("१८. प्रगती", "18. Progress")} value={p.progress} />
-          <Field label={L("१९. वर्तणूक", "19. Conduct")} value={p.conduct} />
+          <Field label={L("१७. शाळा सोडल्याचा दिनांक", "17. Date of leaving")} value={figures(p.dateOfLeaving)} />
+          <Field label={L("१८. शाळा सोडण्याचे कारण", "18. Reason for leaving")} value={p.reasonMr} />
+          <Field label={L("१९. प्रगती", "19. Progress")} value={p.progress} />
+          <Field label={L("२०. वर्तणूक", "20. Conduct")} value={p.conduct} />
           <Field
-            label={L("२०. सर्व देणी दिली आहेत काय?", "20. All dues cleared?")}
+            label={L("२१. सर्व देणी दिली आहेत काय?", "21. All dues cleared?")}
             value={p.duesCleared === false ? (bilingual ? "नाही / No" : "नाही") : bilingual ? "होय / Yes" : "होय"}
           />
           {p.apaarId ? (
-            <Field label={L("२१. अपार आयडी", "21. APAAR ID")} value={toDevanagariDigits(p.apaarId)} />
+            <Field label={L("२२. अपार आयडी", "22. APAAR ID")} value={toDevanagariDigits(p.apaarId)} />
           ) : null}
           {p.remarksMr ? <Field label={L("शेरा", "Remarks")} value={p.remarksMr} /> : null}
         </tbody>

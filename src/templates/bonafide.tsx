@@ -1,5 +1,6 @@
 import type { BonafidePurpose, DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
+import { g, he, his, hisF, honorific } from "@/lib/marathi/gender";
 
 import {
   DuplicateMark,
@@ -10,7 +11,22 @@ import {
   figures,
 } from "./shared";
 
-export const BONAFIDE_CSS = PRINT_CSS;
+/*
+ * A bonafide prints on A5 — half a sheet, which is what the school buys.
+ * Mirroring their wording added two paragraphs and a detail table, and the
+ * worst case (every field populated, long hyphenated names, the duplicate
+ * banner) pushed it to two pages. These numbers hold it to one; the
+ * pagination test in lc-pagination.test.ts enforces it.
+ */
+export const BONAFIDE_CSS =
+  PRINT_CSS +
+  `
+  .sheet { padding: 7mm 10mm; }
+  .bona p { font-size: 9.6pt !important; line-height: 1.85 !important; }
+  .bona table.fields { margin-top: 2.5mm !important; }
+  .bona table.fields td { padding: 0.4mm 1mm; font-size: 8.4pt; }
+  .bona .sign-row { margin-top: 6mm; }
+`;
 
 /**
  * Each purpose needs its own sentence.
@@ -52,28 +68,48 @@ export function BonafideCertificate({
   suppressHeader?: boolean;
 }) {
   const purpose = (p.purpose ?? "other") as BonafidePurpose;
-  const birthPlace = [p.birthVillage, p.birthTaluka, p.birthDistrict]
+  const birthPlace = [
+    p.birthVillage ? `मु.पो. ${p.birthVillage}` : null,
+    p.birthTaluka ? `ता. ${p.birthTaluka}` : null,
+    p.birthDistrict ? `जि. ${p.birthDistrict}` : null,
+  ]
     .filter(Boolean)
     .join(", ");
 
   return (
-    <div className="sheet">
+    <div className="sheet bona">
       <DuplicateMark p={p} />
       <SchoolHeader p={p} suppress={suppressHeader} title="बोनाफाईड प्रमाणपत्र" />
       <SerialLine p={p} />
 
-      <p style={{ fontSize: "10.5pt", lineHeight: 2.1, marginTop: "6mm" }}>
-        प्रमाणित करण्यात येते की, <span className="bold">{p.studentNameMr}</span>
-        {p.fatherNameMr ? <> (वडील: <span className="bold">{p.fatherNameMr}</span>)</> : null}
-        {p.motherNameMr ? <>, (आई: <span className="bold">{p.motherNameMr}</span>)</> : null}
-        {" "}हे/ही या शाळेचे नियमित विद्यार्थी असून, शैक्षणिक वर्ष{" "}
-        <span className="bold">{p.academicYear ? toDevanagariDigits(p.academicYear) : "—"}</span>
-        {" "}मध्ये इयत्ता{" "}
-        <span className="bold">
-          {p.currentClass ?? "—"}
-          {p.currentDivision ? ` (${p.currentDivision})` : ""}
-        </span>
-        {" "}मध्ये शिकत आहेत.
+      {/*
+        Wording follows the school's own pre-printed bonafide closely, so a
+        principal comparing the two side by side sees their document rather
+        than ours. The gendered forms their form leaves as "कुमार / कुमारी"
+        for the clerk to strike out are filled in here, because the record
+        already knows which.
+      */}
+      <p style={{ marginTop: "4mm" }}>
+        दाखला देण्यात येतो की, <span className="bold">{honorific(p.gender)}</span>{" "}
+        <span className="bold" style={{ fontSize: "10.5pt" }}>{p.studentNameMr}</span>{" "}
+        {he(p.gender)} आमच्या शाळेत सन{" "}
+        <span className="bold">{p.academicYear ? toDevanagariDigits(p.academicYear) : "—"}</span>{" "}
+        या वर्षात इयत्ता <span className="bold">{p.currentClass ?? "—"}</span>
+        {p.currentDivision ? <> तुकडी <span className="bold">{p.currentDivision}</span></> : null}
+        {" "}मध्ये शिकत {g(p.gender, "आहे", "आहे")} व {hisF(p.gender)} वर्तणूक{" "}
+        <span className="bold">{p.conduct || "समाधानकारक"}</span> आहे.
+      </p>
+
+      <p style={{ marginTop: "2mm" }}>
+        आमच्या दप्तरी असलेल्या रेकॉर्डप्रमाणे {hisF(p.gender)} जात{" "}
+        <span className="bold">{[p.religion, p.caste].filter(Boolean).join(" - ") || "—"}</span>{" "}
+        असून जन्मतारीख <span className="bold">{figures(p.dob)}</span> (अक्षरी{" "}
+        <span className="bold">{p.dobInWordsMr}</span>) अशी आहे.
+        {birthPlace ? (
+          <>
+            {" "}{his(p.gender)} जन्मस्थळ <span className="bold">{birthPlace}</span> हे आहे.
+          </>
+        ) : null}
       </p>
 
       <table className="fields" style={{ marginTop: "4mm" }}>
@@ -81,25 +117,25 @@ export function BonafideCertificate({
           <tr>
             <td className="label">जनरल रजिस्टर क्र.</td>
             <td className="value">{toDevanagariDigits(p.grNumber)}</td>
-            <td className="label">जन्मतारीख</td>
-            <td className="value">{figures(p.dob)}</td>
+            <td className="label">प्रवर्ग</td>
+            <td className="value">{p.category ?? "—"}</td>
           </tr>
           <tr>
-            <td className="label">जात / प्रवर्ग</td>
-            <td className="value">{[p.caste, p.category].filter(Boolean).join(" / ") || "—"}</td>
-            <td className="label">राष्ट्रीयत्व</td>
-            <td className="value">{p.nationality ?? "—"}</td>
+            <td className="label">वडिलांचे नाव</td>
+            <td className="value">{p.fatherNameMr ?? "—"}</td>
+            <td className="label">आईचे नाव</td>
+            <td className="value">{p.motherNameMr ?? "—"}</td>
           </tr>
           <tr>
-            <td className="label">जन्मस्थळ</td>
-            <td className="value">{birthPlace || "—"}</td>
             <td className="label">प्रवेश दिनांक</td>
             <td className="value">{figures(p.admissionDate)}</td>
+            <td className="label">राष्ट्रीयत्व</td>
+            <td className="value">{p.nationality ?? "—"}</td>
           </tr>
         </tbody>
       </table>
 
-      <p style={{ fontSize: "10pt", lineHeight: 2, marginTop: "5mm" }}>
+      <p style={{ marginTop: "3mm" }}>
         {PURPOSE_SENTENCE[purpose]}
       </p>
 
@@ -107,7 +143,7 @@ export function BonafideCertificate({
         प्रयोजन: <span className="bold">{PURPOSE_LABEL[purpose]}</span>
       </p>
 
-      <div className="row small" style={{ marginTop: "6mm" }}>
+      <div className="row small" style={{ marginTop: "4mm" }}>
         <div>
           ठिकाण: <span className="bold">{p.taluka ?? p.district ?? "—"}</span>
         </div>

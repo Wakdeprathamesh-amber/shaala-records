@@ -83,6 +83,8 @@ export type DocumentPayload = {
   apaarId: string | null;
   studentNameMr: string;
   studentNameEn: string;
+  /** Drives the gendered Marathi forms on every certificate. */
+  gender: "male" | "female" | "other" | null;
   motherNameMr: string | null;
   fatherNameMr: string | null;
 
@@ -104,6 +106,7 @@ export type DocumentPayload = {
 
   admissionDate: string;
   admissionClass: string | null;
+  previousSchool: string | null;
   lastClassPassed: string | null;
   currentClass: string | null;
   currentDivision: string | null;
@@ -236,6 +239,7 @@ export async function issueDocument(
       apaarId: s.apaarId,
       studentNameMr: fullName(s.firstNameMr, s.middleNameMr, s.lastNameMr),
       studentNameEn: fullName(s.firstNameEn, s.middleNameEn, s.lastNameEn),
+      gender: s.gender,
       motherNameMr: s.motherNameMr,
       fatherNameMr: s.fatherNameMr,
 
@@ -259,6 +263,7 @@ export async function issueDocument(
 
       admissionDate: s.admissionDate,
       admissionClass: s.admissionClass,
+      previousSchool: s.previousSchool,
       lastClassPassed: s.lastClassPassed,
       currentClass: enrollment?.class ?? null,
       currentDivision: enrollment?.division ?? null,

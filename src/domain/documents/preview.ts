@@ -76,6 +76,7 @@ export async function buildPreviewPayload(
     apaarId: s.apaarId,
     studentNameMr: [s.firstNameMr, s.middleNameMr, s.lastNameMr].filter(Boolean).join(" "),
     studentNameEn: [s.firstNameEn, s.middleNameEn, s.lastNameEn].filter(Boolean).join(" "),
+    gender: s.gender,
     motherNameMr: s.motherNameMr,
     fatherNameMr: s.fatherNameMr,
 
@@ -97,6 +98,7 @@ export async function buildPreviewPayload(
 
     admissionDate: s.admissionDate,
     admissionClass: s.admissionClass,
+    previousSchool: s.previousSchool,
     lastClassPassed: s.lastClassPassed,
     currentClass: enrollment?.class ?? null,
     currentDivision: enrollment?.division ?? null,

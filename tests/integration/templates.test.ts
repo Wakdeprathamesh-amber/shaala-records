@@ -35,6 +35,7 @@ const base = {
   apaarId: "123456789012",
   studentNameMr: "आदित्य संजय पाटील",
   studentNameEn: "Aditya Sanjay Patil",
+  gender: "male" as const,
   motherNameMr: "सौ. संजाबाई पाटील",
   fatherNameMr: "संजय पाटील",
   dob: "2010-01-01",
@@ -53,6 +54,7 @@ const base = {
   bloodGroup: "B+",
   admissionDate: "2020-06-15",
   admissionClass: "1",
+  previousSchool: "जिल्हा परिषद प्राथमिक शाळा, रावडी",
   lastClassPassed: "9",
   currentClass: "10",
   currentDivision: "अ",
@@ -124,6 +126,12 @@ describe("leaving certificate", () => {
     expect(html).toContain(lc.schoolNameMr);        // the school itself still prints
   });
 
+  it("prints the previous school, which the register records and the LC needs", async () => {
+    const html = await documentHtml(lc);
+    expect(html).toContain("मागील शाळेचे नाव");
+    expect(html).toContain("जिल्हा परिषद प्राथमिक शाळा, रावडी");
+  });
+
   it("prints the UDISE code and board index", async () => {
     const html = await documentHtml(lc);
     expect(html).toContain("२७२५१०००१०१");
@@ -183,6 +191,39 @@ describe("bilingual leaving certificate", () => {
 });
 
 describe("bonafide", () => {
+  it("uses the masculine forms for a boy, with nothing struck through", async () => {
+    const html = await documentHtml({ ...bonafide, gender: "male" });
+    expect(html).toContain("कुमार");
+    expect(html).toContain("त्याची वर्तणूक");
+    expect(html).not.toContain("कुमार / कुमारी");   // no unfilled slash
+    expect(html).not.toContain("त्याची / तिची");
+  });
+
+  it("uses the feminine forms for a girl", async () => {
+    const html = await documentHtml({ ...bonafide, gender: "female" });
+    expect(html).toContain("कुमारी");
+    expect(html).toContain("तिची वर्तणूक");
+    expect(html).toContain(" ही आमच्या शाळेत");
+  });
+
+  it("prints both forms when gender was never recorded, as a paper form does", async () => {
+    // Better an unfilled form than a wrong grammatical gender on a child's
+    // certificate.
+    const html = await documentHtml({ ...bonafide, gender: null });
+    expect(html).toContain("कुमार / कुमारी");
+  });
+
+  it("states conduct, which the school's own bonafide carries and ours did not", async () => {
+    expect(await documentHtml({ ...bonafide, conduct: "समाधानकारक" })).toContain("समाधानकारक");
+    // Defaults rather than leaving the sentence dangling.
+    expect(await documentHtml({ ...bonafide, conduct: undefined })).toContain("वर्तणूक");
+  });
+
+  it("joins religion and caste the way the school writes it", async () => {
+    // Their certificate reads "हिंदू - मराठा" on one line.
+    expect(await documentHtml(bonafide)).toContain("हिंदू - मराठा");
+  });
+
   it("states the sentence the purpose requires", async () => {
     const scholarship = await documentHtml({ ...bonafide, purpose: "scholarship" });
     const passport = await documentHtml({ ...bonafide, purpose: "passport" });

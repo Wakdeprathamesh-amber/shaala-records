@@ -17,6 +17,11 @@ to sign off, once, before the pilot goes live.
 118 automated tests pass — but they only prove the code matches the table.
 They cannot prove the table is right. That is what this review is for.
 
+**One real-world confirmation so far.** The first client's bonafide no. 446
+records a date of birth of 22/8/2012 and its clerk wrote the words by hand as
+**बावीस ऑगस्ट दोन हजार बारा**. Our generator produces exactly that string.
+That is one date out of a hundred-word table — encouraging, not sufficient.
+
 ## How to do the review
 
 Ask any Marathi-reading teacher or clerk at the pilot school — this needs about
@@ -65,6 +70,25 @@ thirty" — and are the forms most often written incorrectly.
 Note that 99 breaks the pattern — it is नव्याण्णव, not *एकोणशंभर. Please
 confirm this is right.
 
+### C. Gendered forms
+
+Marathi inflects for gender, so a certificate cannot be written once for
+everyone. The school's own pre-printed bonafide prints both and has the clerk
+strike one out — `कुमार / कुमारी`, `त्याची / तिची`. We know the student's
+gender from the register, so we print the correct one and leave no
+strike-throughs. Please confirm each pair:
+
+| Use | मुलगा | मुलगी | ✓ / correction |
+|---|---|---|---|
+| Honorific before the name | कुमार | कुमारी | |
+| "he / she" | हा | ही | |
+| "his / her" (before वर्तणूक, जात) | त्याची | तिची | |
+| "his / her" (before जन्मस्थळ) | त्याचे | तिचे | |
+| dative ("to him / her") | त्याला | तिला | |
+
+Where gender is not recorded we print both, as a paper form does. Please
+confirm that is what you would want, rather than picking one.
+
 ## Open questions I could not resolve
 
 These are places where I made a judgement call. Each needs a decision, not just
@@ -84,7 +108,13 @@ a tick.
    (`चौदा मार्च दोन हजार अकरा`). Confirm against a real LC — some formats
    place the year first.
 
-4. **`सत्याहत्तर` (77) vs `सत्त्याहत्तर`.** I used the single-त form for 77
+4. **Is there a form we should use when gender is recorded as "other"?**
+   At present we print both (`कुमार / कुमारी`), the same as an unrecorded
+   student. Maharashtra statutory documents appear to have no established
+   third form, and inventing one is not our call — but if the school has a
+   convention, tell us.
+
+5. **`सत्याहत्तर` (77) vs `सत्त्याहत्तर`.** I used the single-त form for 77
    but the double-त form for 87 (`सत्त्याऐंशी`) and 97 (`सत्त्याण्णव`).
    Please check whether 77 should also be doubled — this inconsistency may be
    an error in my table.
