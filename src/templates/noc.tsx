@@ -7,6 +7,7 @@ import {
   SchoolHeader,
   SerialLine,
   Signatures,
+  classLabel,
   figures,
 } from "./shared";
 
@@ -30,9 +31,7 @@ export function NocCertificate({
   p: DocumentPayload;
   suppressHeader?: boolean;
 }) {
-  const cls = p.currentClass
-    ? `${p.currentClass}${p.currentDivision ? ` (${p.currentDivision})` : ""}`
-    : "—";
+  const cls = classLabel(p.currentClass, p.currentDivision, true);
 
   return (
     <div className="sheet">

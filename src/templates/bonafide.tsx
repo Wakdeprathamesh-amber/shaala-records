@@ -1,6 +1,6 @@
 import type { BonafidePurpose, DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
-import { g, he, his, hisF, honorific } from "@/lib/marathi/gender";
+import { he, his, hisF, honorific } from "@/lib/marathi/gender";
 
 import {
   DuplicateMark,
@@ -8,6 +8,7 @@ import {
   SchoolHeader,
   SerialLine,
   Signatures,
+  classLabel,
   figures,
 } from "./shared";
 
@@ -94,9 +95,9 @@ export function BonafideCertificate({
         <span className="bold" style={{ fontSize: "10.5pt" }}>{p.studentNameMr}</span>{" "}
         {he(p.gender)} आमच्या शाळेत सन{" "}
         <span className="bold">{p.academicYear ? toDevanagariDigits(p.academicYear) : "—"}</span>{" "}
-        या वर्षात इयत्ता <span className="bold">{p.currentClass ?? "—"}</span>
+        या वर्षात इयत्ता <span className="bold">{classLabel(p.currentClass)}</span>
         {p.currentDivision ? <> तुकडी <span className="bold">{p.currentDivision}</span></> : null}
-        {" "}मध्ये शिकत {g(p.gender, "आहे", "आहे")} व {hisF(p.gender)} वर्तणूक{" "}
+        {" "}मध्ये शिकत आहे व {hisF(p.gender)} वर्तणूक{" "}
         <span className="bold">{p.conduct || "समाधानकारक"}</span> आहे.
       </p>
 

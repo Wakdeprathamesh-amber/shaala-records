@@ -1,7 +1,7 @@
 import type { DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
 
-import { figures } from "./shared";
+import { classLabel, figures } from "./shared";
 
 /**
  * Student ID card, 8-up on A4.
@@ -59,10 +59,7 @@ export function IdCard({ p }: { p: DocumentPayload }) {
           <div className="name-en">{p.studentNameEn}</div>
           <div className="kv">
             <span>इयत्ता:</span>
-            <span>
-              {p.currentClass ?? "—"}
-              {p.currentDivision ? ` ${p.currentDivision}` : ""}
-            </span>
+            <span>{classLabel(p.currentClass, p.currentDivision)}</span>
           </div>
           <div className="kv">
             <span>जीआर:</span>

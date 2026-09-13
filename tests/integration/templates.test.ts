@@ -252,12 +252,21 @@ describe("bonafide", () => {
 });
 
 describe("id card", () => {
+  it("prints the class in Devanagari, like every other figure on the page", async () => {
+    // "इयत्ता 8" among Devanagari numerals reads as an unfinished form; the
+    // school's own handwritten certificate says "८ वी".
+    const html = await documentHtml({ ...lc, currentClass: "8", currentDivision: "अ" });
+    expect(html).toContain("८");
+    expect(html).not.toMatch(/इयत्ता[^<]*\b8\b/);
+  });
+
   it("shows name in both scripts, class, GR and blood group", async () => {
     const html = await documentHtml(idCard);
     expect(html).toContain(idCard.studentNameMr);
     expect(html).toContain(idCard.studentNameEn);
     expect(html).toContain("B+");
     expect(html).toContain("१००१");
+    expect(html).toContain("१०");   // class 10 in Devanagari
   });
 
   it("batches eight to an A4 sheet", async () => {

@@ -7,6 +7,7 @@ import {
   SchoolHeader,
   SerialLine,
   Signatures,
+  classLabel,
   figures,
 } from "./shared";
 
@@ -29,9 +30,7 @@ export function CharacterCertificate({
 }) {
   const until = p.dateOfLeaving ? figures(p.dateOfLeaving) : "आजपर्यंत";
   const stillHere = !p.dateOfLeaving;
-  const cls = p.currentClass
-    ? `${p.currentClass}${p.currentDivision ? ` (${p.currentDivision})` : ""}`
-    : "—";
+  const cls = classLabel(p.currentClass, p.currentDivision, true);
 
   return (
     <div className="sheet">

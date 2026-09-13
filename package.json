@@ -15,7 +15,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts",
     "db:check": "tsx src/db/check.ts",
-    "db:create-school": "tsx src/db/create-school.ts"
+    "db:create-school": "tsx src/db/create-school.ts",
+    "samples": "vitest run --config vitest.samples.mts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -1,6 +1,24 @@
 import type { DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
 
+/**
+ * The class, in Devanagari figures with its division.
+ *
+ * "इयत्ता 8" on a certificate where every other number is Devanagari looks
+ * like a filled-in form someone forgot to finish — the client's own
+ * handwritten certificate reads "८ वी".
+ */
+export function classLabel(
+  cls: string | null | undefined,
+  division?: string | null,
+  bracket = false,
+): string {
+  if (!cls) return "—";
+  const c = toDevanagariDigits(cls);
+  if (!division) return c;
+  return bracket ? `${c} (${division})` : `${c} ${division}`;
+}
+
 /** dd/mm/yyyy in Devanagari figures, as the register writes it. */
 export function figures(iso: string | null | undefined): string {
   if (!iso) return "—";

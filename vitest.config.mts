@@ -8,6 +8,8 @@ loadEnv({ path: ".env.local" });
 export default defineConfig({
   test: {
     environment: "node",
+    // tests/samples is a generator, not a suite — it writes the client-facing
+    // PDFs into out/ and is run on demand with `npm run samples`.
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
     // Integration tests share one database; running files in parallel would
     // let one file's teardown delete another's fixtures.

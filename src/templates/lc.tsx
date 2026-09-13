@@ -9,6 +9,7 @@ import {
   SchoolHeader,
   SerialLine,
   Signatures,
+  classLabel,
   figures,
 } from "./shared";
 
@@ -104,16 +105,12 @@ export function LeavingCertificate({
           />
           <Field label={L("११. मातृभाषा", "11. Mother tongue")} value={p.motherTongue} />
           <Field label={L("१२. शाळेत प्रवेश घेतल्याचा दिनांक", "12. Date of admission")} value={figures(p.admissionDate)} />
-          <Field label={L("१३. प्रवेशाच्या वेळची इयत्ता", "13. Class at admission")} value={p.admissionClass} />
+          <Field label={L("१३. प्रवेशाच्या वेळची इयत्ता", "13. Class at admission")} value={classLabel(p.admissionClass)} />
           <Field label={L("१४. मागील शाळेचे नाव", "14. Name of previous school")} value={p.previousSchool} />
-          <Field label={L("१५. मागील शाळेत उत्तीर्ण इयत्ता", "15. Last class passed there")} value={p.lastClassPassed} />
+          <Field label={L("१५. मागील शाळेत उत्तीर्ण इयत्ता", "15. Last class passed there")} value={classLabel(p.lastClassPassed)} />
           <Field
             label={L("१६. शाळा सोडतेवेळची इयत्ता", "16. Class at the time of leaving")}
-            value={
-              p.currentClass
-                ? `${p.currentClass}${p.currentDivision ? ` (${p.currentDivision})` : ""}`
-                : "—"
-            }
+            value={classLabel(p.currentClass, p.currentDivision, true)}
           />
           <Field label={L("१७. शाळा सोडल्याचा दिनांक", "17. Date of leaving")} value={figures(p.dateOfLeaving)} />
           <Field label={L("१८. शाळा सोडण्याचे कारण", "18. Reason for leaving")} value={p.reasonMr} />
