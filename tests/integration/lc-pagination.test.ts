@@ -46,6 +46,7 @@ const worstCase: DocumentPayload = {
   birthState: "महाराष्ट्र",
   caste: "मराठा",
   subCaste: "कुणबी",
+  casteCertNo: null,
   category: "OPEN",
   religion: "हिंदू",
   nationality: "Indian",
@@ -78,6 +79,16 @@ describe("leaving certificate pagination", () => {
 
   it("fits on one page as a duplicate, which adds a banner", async () => {
     const pdf = await renderDocumentPdf({ ...worstCase, isDuplicate: true });
+    expect(pageCount(pdf)).toBe(1);
+  });
+
+  it("fits on one page as a bilingual certificate, which lengthens every label", async () => {
+    const pdf = await renderDocumentPdf({ ...worstCase, casteCertNo: "MH/PUN/2019/0044821" }, { bilingual: true });
+    expect(pageCount(pdf)).toBe(1);
+  });
+
+  it("fits on one page bilingual AND duplicate together", async () => {
+    const pdf = await renderDocumentPdf({ ...worstCase, isDuplicate: true }, { bilingual: true });
     expect(pageCount(pdf)).toBe(1);
   });
 

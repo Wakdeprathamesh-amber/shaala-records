@@ -61,7 +61,7 @@ const NAMES: Array<[string, string, string, string, string, string, "male" | "fe
   ["अथर्व", "प्रमोद", "सोनवणे", "Atharva", "Pramod", "Sonawane", "male"],
 ];
 
-const CATEGORIES = ["OPEN", "OBC", "SC", "ST", "VJNT", "SBC", "EWS"];
+const CATEGORIES = ["OPEN", "OBC", "SC", "ST", "VJ-A", "NT-B", "NT-C", "NT-D", "SBC", "EWS"];
 const CLASSES = ["5", "6", "7", "8", "9", "10"];
 const DIVISIONS = ["अ", "ब"];
 
@@ -143,6 +143,8 @@ async function main() {
     { schoolId: school.id, docType: "lc", nextSerial: 1 },
     { schoolId: school.id, docType: "bonafide", nextSerial: 1 },
     { schoolId: school.id, docType: "id_card", nextSerial: 1 },
+    { schoolId: school.id, docType: "character", nextSerial: 1 },
+    { schoolId: school.id, docType: "noc", nextSerial: 1 },
   ]);
 
   const rows = NAMES.map((n, i) => {

@@ -28,13 +28,25 @@ export default async function DocumentPage({
         title={t(`doc.${p.docType}` as "doc.lc")}
         subtitle={`${t("doc.serialNo")} ${toDevanagariDigits(p.serialNo)} · ${p.studentNameMr}`}
         action={
-          <a
-            href={`/api/documents/${doc.id}/pdf`}
-            className="inline-flex min-h-[44px] items-center rounded-lg bg-slate-900 px-4
-                       text-sm font-medium text-white dark:bg-slate-50 dark:text-slate-900"
-          >
-            {t("action.download")}
-          </a>
+          <div className="flex flex-wrap items-center gap-2">
+            {p.docType === "lc" ? (
+              <a
+                href={`/api/documents/${doc.id}/pdf?lang=bi`}
+                className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-4
+                           text-sm font-medium text-slate-700 hover:bg-slate-100
+                           dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                {t("doc.bilingual")}
+              </a>
+            ) : null}
+            <a
+              href={`/api/documents/${doc.id}/pdf`}
+              className="inline-flex min-h-[44px] items-center rounded-lg bg-slate-900 px-4
+                         text-sm font-medium text-white dark:bg-slate-50 dark:text-slate-900"
+            >
+              {t("action.download")}
+            </a>
+          </div>
         }
       />
 

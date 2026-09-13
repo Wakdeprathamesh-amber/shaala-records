@@ -7,7 +7,7 @@ import { useFormStatus } from "react-dom";
 import { Field } from "@/components/Field";
 import { FieldPair } from "@/components/FieldPair";
 import type { StudentFormState } from "@/domain/students/actions";
-import { CATEGORIES } from "@/domain/students/schema";
+import { CATEGORIES, CATEGORY_LABEL } from "@/domain/students/schema";
 
 type Labels = Record<string, string>;
 
@@ -196,10 +196,11 @@ export function StudentForm({
             defaultValue={v("category")}
             required
             error={err("category")}
-            options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+            options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABEL[c] }))}
           />
           <Field name="caste" label={labels.caste} defaultValue={v("caste")} error={err("caste")} />
           <Field name="subCaste" label={labels.subCaste} defaultValue={v("subCaste")} error={err("subCaste")} />
+          <Field name="casteCertNo" label={labels.casteCertNo} defaultValue={v("casteCertNo")} error={err("casteCertNo")} />
           <Field name="religion" label={labels.religion} defaultValue={v("religion")} error={err("religion")} />
           <Field name="motherTongue" label={labels.motherTongue} defaultValue={v("motherTongue")} error={err("motherTongue")} />
           <Field name="nationality" label={labels.nationality} defaultValue={v("nationality") || "Indian"} error={err("nationality")} />

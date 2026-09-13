@@ -141,9 +141,19 @@ describe("normaliseGender", () => {
 describe("normaliseCategory", () => {
   it.each([
     ["GEN", "OPEN"], ["General", "OPEN"], ["open", "OPEN"],
-    ["SC", "SC"], ["NT", "VJNT"], ["VJ", "VJNT"],
+    ["SC", "SC"], ["VJ (A)", "VJ-A"], ["vj-a", "VJ-A"],
+    ["NT B", "NT-B"], ["nt-c", "NT-C"], ["NTD", "NT-D"], ["sbc", "SBC"],
   ])("%s → %s", (input, expected) => {
     expect(normaliseCategory(input)).toBe(expected);
+  });
+
+  it("refuses to guess which of the four a bare VJNT / VJ / NT meant", () => {
+    // Old spreadsheets lumped them together. Passing the value through means
+    // validation asks the clerk, rather than a wrong sub-category silently
+    // landing on a scholarship form.
+    expect(normaliseCategory("VJNT")).toBe("VJNT");
+    expect(normaliseCategory("NT")).toBe("NT");
+    expect(normaliseCategory("VJ")).toBe("VJ");
   });
 
   it("passes an unrecognised value through for the clerk to fix", () => {

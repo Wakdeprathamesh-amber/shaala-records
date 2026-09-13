@@ -15,5 +15,6 @@ export const NAV: NavItem[] = [
   { href: "/documents", labelKey: "nav.documents", icon: "▤" },
   { href: "/exports", labelKey: "nav.exports", icon: "↑" },
   { href: "/import", labelKey: "nav.import", icon: "↓" },
+  { href: "/reports", labelKey: "nav.reports", icon: "▥" },
   { href: "/settings", labelKey: "nav.settings", icon: "⚙" },
 ];

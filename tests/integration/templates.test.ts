@@ -40,6 +40,7 @@ const base = {
   birthState: "महाराष्ट्र",
   caste: "मराठा",
   subCaste: "कुणबी",
+  casteCertNo: "MH/PUN/2019/0044821",
   category: "OPEN",
   religion: "हिंदू",
   nationality: "Indian",
@@ -135,6 +136,28 @@ describe("leaving certificate", () => {
     expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
     await writeFile("/tmp/shaala-lc.pdf", pdf);
     await writeFile("/tmp/shaala-lc-duplicate.pdf", await renderDocumentPdf({ ...lc, isDuplicate: true }));
+  });
+});
+
+describe("bilingual leaving certificate", () => {
+  it("adds an English gloss to every label without dropping the Marathi", async () => {
+    // renderToStaticMarkup escapes the apostrophe in "Student's" to &#x27;.
+    const html = (await documentHtml(lc, { bilingual: true })).replace(/&#x27;/g, "'");
+    for (const en of ["Student's full name", "Date of birth (in words)", "Reason for leaving", "Class Teacher"]) {
+      expect(html).toContain(en);
+    }
+    for (const mr of ["विद्यार्थ्याचे संपूर्ण नाव", "जन्मतारीख (अक्षरात)", "मुख्याध्यापक"]) {
+      expect(html).toContain(mr);
+    }
+  });
+
+  it("prints the caste certificate number when present", async () => {
+    expect(await documentHtml(lc)).toContain("MH/PUN/2019/0044821");
+    expect(await documentHtml({ ...lc, casteCertNo: null })).not.toContain("जात प्रमाणपत्र क्र.");
+  });
+
+  it("is Marathi-only by default", async () => {
+    expect(await documentHtml(lc)).not.toContain("Student's full name");
   });
 });
 

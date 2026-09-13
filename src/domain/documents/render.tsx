@@ -5,6 +5,8 @@ import type { DocumentPayload } from "./issue";
 import { LeavingCertificate, LC_CSS } from "@/templates/lc";
 import { BonafideCertificate, BONAFIDE_CSS } from "@/templates/bonafide";
 import { IdCardSheet, ID_CARD_CSS } from "@/templates/id-card";
+import { CharacterCertificate, CHARACTER_CSS } from "@/templates/character";
+import { NocCertificate, NOC_CSS } from "@/templates/noc";
 
 /**
  * Loaded at call time, not imported at the top.
@@ -24,6 +26,8 @@ export type RenderChoices = {
   format?: "A4" | "A5";
   /** For schools printing onto pre-printed letterhead stationery. */
   suppressHeader?: boolean;
+  /** Leaving certificate only: English gloss on every label. */
+  bilingual?: boolean;
 };
 
 /** HTML for one document, from its frozen snapshot. */
@@ -35,7 +39,11 @@ export async function documentHtml(
     case "lc":
       return printDocument(
         await renderMarkup(
-          <LeavingCertificate p={payload} suppressHeader={choices.suppressHeader} />,
+          <LeavingCertificate
+            p={payload}
+            suppressHeader={choices.suppressHeader}
+            bilingual={choices.bilingual}
+          />,
         ),
         LC_CSS,
       );
@@ -51,6 +59,18 @@ export async function documentHtml(
         await renderMarkup(<IdCardSheet cards={[payload]} />),
         ID_CARD_CSS,
       );
+    case "character":
+      return printDocument(
+        await renderMarkup(
+          <CharacterCertificate p={payload} suppressHeader={choices.suppressHeader} />,
+        ),
+        CHARACTER_CSS,
+      );
+    case "noc":
+      return printDocument(
+        await renderMarkup(<NocCertificate p={payload} suppressHeader={choices.suppressHeader} />),
+        NOC_CSS,
+      );
   }
 }
 
@@ -58,6 +78,8 @@ const DEFAULT_FORMAT: Record<DocumentPayload["docType"], "A4" | "A5"> = {
   lc: "A4",
   bonafide: "A5",
   id_card: "A4",
+  character: "A5",
+  noc: "A5",
 };
 
 /**

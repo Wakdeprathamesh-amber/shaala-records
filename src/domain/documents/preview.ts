@@ -84,6 +84,7 @@ export async function buildPreviewPayload(
 
     caste: s.caste,
     subCaste: s.subCaste,
+    casteCertNo: s.casteCertNo,
     category: s.category,
     religion: s.religion,
     nationality: s.nationality,
@@ -109,5 +110,6 @@ export async function buildPreviewPayload(
         }
       : {}),
     ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other" } : {}),
+    ...(input.docType === "noc" ? { nocPurposeMr: input.nocPurposeMr ?? null } : {}),
   };
 }

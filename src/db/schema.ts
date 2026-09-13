@@ -40,7 +40,10 @@ export const studentStatus = pgEnum("student_status", [
 
 export const userRole = pgEnum("user_role", ["principal", "clerk"]);
 
-export const docType = pgEnum("doc_type", ["lc", "bonafide", "id_card"]);
+/** Character certificate and NOC were added after a competitor review — both
+ *  are routinely asked for at a ZP school counter and cost nothing to add to
+ *  an engine that already issues, serialises and snapshots documents. */
+export const docType = pgEnum("doc_type", ["lc", "bonafide", "id_card", "character", "noc"]);
 
 export const gender = pgEnum("gender", ["male", "female", "other"]);
 
@@ -186,6 +189,10 @@ export const students = pgTable(
 
     caste: text("caste"),
     subCaste: text("sub_caste"),
+    /** Caste certificate number. Printed on the caste-purpose bonafide and
+     *  asked for by every scholarship portal; a clerk otherwise has to find
+     *  the paper certificate in the file each time. */
+    casteCertNo: text("caste_cert_no"),
     category: text("category"), // OPEN / SC / ST / OBC / VJNT / SBC / EWS
     religion: text("religion"),
     nationality: text("nationality").default("Indian"),

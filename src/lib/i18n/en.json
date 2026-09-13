@@ -97,5 +97,13 @@
   "common.loading": "Loading…",
   "common.error": "Something went wrong",
   "common.of": "of",
-  "common.showing": "Showing"
+  "common.showing": "Showing",
+  "doc.character": "Character Certificate",
+  "doc.noc": "No Objection Certificate",
+  "doc.bilingual": "Bilingual (Marathi + English)",
+  "field.casteCertNo": "Caste certificate no.",
+  "nav.reports": "Reports",
+  "report.demographic": "Demographic register",
+  "report.print": "Print PDF",
+  "report.inspection": "Inspection format — academic year"
 }

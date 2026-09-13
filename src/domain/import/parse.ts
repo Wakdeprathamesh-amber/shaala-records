@@ -200,12 +200,23 @@ export function normaliseGender(input: string): string {
 }
 
 export function normaliseCategory(input: string): string {
-  const s = input.trim().toUpperCase().replace(/[\s.]/g, "");
-  if ((CATEGORIES as readonly string[]).includes(s)) return s;
+  const raw = input.trim();
+  const upper = raw.toUpperCase();
+  if ((CATEGORIES as readonly string[]).includes(upper)) return upper;
+
+  // Strip spaces, dots, brackets and hyphens so "VJ (A)", "vj-a" and "NT B"
+  // all land on the same key.
+  const key = upper.replace(/[\s.()\-]/g, "");
   const map: Record<string, string> = {
-    GEN: "OPEN", GENERAL: "OPEN", OP: "OPEN", खुला: "OPEN",
-    SCHEDULEDCASTE: "SC", SCHEDULEDTRIBE: "ST",
-    OBCNT: "OBC", NT: "VJNT", VJ: "VJNT", VJDT: "VJNT",
+    GEN: "OPEN", GENERAL: "OPEN", OP: "OPEN", OPEN: "OPEN", खुला: "OPEN",
+    SC: "SC", SCHEDULEDCASTE: "SC",
+    ST: "ST", SCHEDULEDTRIBE: "ST",
+    VJA: "VJ-A", NTB: "NT-B", NTC: "NT-C", NTD: "NT-D",
+    OBC: "OBC", OBCNT: "OBC",
+    SBC: "SBC", EWS: "EWS",
   };
-  return map[s] ?? input.trim();
+  // "VJNT", "VJ" and "NT" on their own are deliberately absent: the old
+  // spreadsheets lumped four categories together and there is no honest way
+  // to pick one. The value passes through and validation asks the clerk.
+  return map[key] ?? raw;
 }

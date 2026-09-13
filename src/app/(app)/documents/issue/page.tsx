@@ -55,10 +55,12 @@ export default async function IssuePage({
   const s = await studentById(ctx, studentId);
   if (!s) notFound();
 
-  const [lc, bonafide, idCard] = await Promise.all([
+  const [lc, bonafide, idCard, character, noc] = await Promise.all([
     originalFor(ctx, s.id, "lc"),
     originalFor(ctx, s.id, "bonafide"),
     originalFor(ctx, s.id, "id_card"),
+    originalFor(ctx, s.id, "character"),
+    originalFor(ctx, s.id, "noc"),
   ]);
 
   const nameMr = [s.firstNameMr, s.middleNameMr, s.lastNameMr].filter(Boolean).join(" ");
@@ -71,13 +73,24 @@ export default async function IssuePage({
         studentId={s.id}
         studentName={nameMr}
         grNumber={s.grNumber}
-        hasOriginal={{ lc: Boolean(lc), bonafide: Boolean(bonafide), id_card: Boolean(idCard) }}
+        hasOriginal={{
+          lc: Boolean(lc),
+          bonafide: Boolean(bonafide),
+          id_card: Boolean(idCard),
+          character: Boolean(character),
+          noc: Boolean(noc),
+        }}
         labels={{
           gr: t("students.gr"),
           docType: t("nav.documents"),
           lc: t("doc.lc"),
           bonafide: t("doc.bonafide"),
           id_card: t("doc.id_card"),
+          character: t("doc.character"),
+          noc: t("doc.noc"),
+          nocPurpose: "कशासाठी — Purpose",
+          nocHint: "उदा. इतर शाळेत प्रवेश घेण्यास, क्रीडा स्पर्धेत भाग घेण्यास, वसतिगृहात प्रवेशासाठी",
+          bilingual: t("doc.bilingual"),
           alreadyIssued: t("doc.serialNo"),
           reprint: `${t("doc.duplicate")} — reprint`,
           dateOfLeaving: "शाळा सोडल्याचा दिनांक — Date of leaving",

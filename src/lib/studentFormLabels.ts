@@ -34,6 +34,7 @@ export function studentFormLabels(t: T): Record<string, string> {
     category: t("field.category"),
     caste: t("field.caste"),
     subCaste: t("field.subCaste"),
+    casteCertNo: t("field.casteCertNo"),
     religion: t("field.religion"),
     motherTongue: t("field.motherTongue"),
     nationality: t("field.nationality"),

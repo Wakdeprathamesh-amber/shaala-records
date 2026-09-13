@@ -44,6 +44,9 @@ export type IssueInput = {
 
   // Bonafide
   purpose?: BonafidePurpose;
+
+  // NOC — what the certificate is for, in the school's own words.
+  nocPurposeMr?: string;
 };
 
 /**
@@ -88,6 +91,7 @@ export type DocumentPayload = {
 
   caste: string | null;
   subCaste: string | null;
+  casteCertNo: string | null;
   category: string | null;
   religion: string | null;
   nationality: string | null;
@@ -112,6 +116,9 @@ export type DocumentPayload = {
 
   // Bonafide only
   purpose?: BonafidePurpose;
+
+  // NOC only
+  nocPurposeMr?: string | null;
 };
 
 export type IssuedDocument = {
@@ -235,6 +242,7 @@ export async function issueDocument(
 
       caste: s.caste,
       subCaste: s.subCaste,
+      casteCertNo: s.casteCertNo,
       category: s.category,
       religion: s.religion,
       nationality: s.nationality,
@@ -260,6 +268,7 @@ export async function issueDocument(
           }
         : {}),
       ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other" } : {}),
+      ...(input.docType === "noc" ? { nocPurposeMr: input.nocPurposeMr ?? null } : {}),
     };
 
     const [doc] = await tx

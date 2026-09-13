@@ -10,7 +10,7 @@ import { issueDocument } from "./issue";
 const IssueSchema = z
   .object({
     studentId: z.uuid({ error: "Pick a student" }),
-    docType: z.enum(["lc", "bonafide", "id_card"]),
+    docType: z.enum(["lc", "bonafide", "id_card", "character", "noc"]),
     duplicate: z.coerce.boolean().optional(),
     issuedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 
@@ -25,6 +25,8 @@ const IssueSchema = z
     purpose: z
       .enum(["scholarship", "bank", "passport", "caste", "domicile", "other"])
       .optional(),
+
+    nocPurposeMr: z.string().trim().max(200).optional().or(z.literal("")),
   })
   .refine((v) => v.docType !== "lc" || Boolean(v.dateOfLeaving), {
     error: "शाळा सोडल्याचा दिनांक आवश्यक — Date of leaving is required",
@@ -80,6 +82,7 @@ export async function issue(
       remarksMr: d.remarksMr || undefined,
       duesCleared: d.duesCleared,
       purpose: d.purpose,
+      nocPurposeMr: d.nocPurposeMr || undefined,
     });
 
     revalidatePath("/documents");

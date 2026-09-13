@@ -60,6 +60,20 @@ describe("blocking errors", () => {
     expect(issues.some((i) => i.code === "category_invalid")).toBe(true);
   });
 
+  it("tells a clerk with a legacy VJNT record which four options exist", () => {
+    const issues = run([{ ...ok, student: { ...ok.student, category: "VJNT" } }]);
+    const cat = issues.find((i) => i.code === "category_invalid");
+    expect(cat?.severity).toBe("error");
+    for (const opt of ["VJ-A", "NT-B", "NT-C", "NT-D"]) expect(cat?.message).toContain(opt);
+  });
+
+  it("accepts every split category", () => {
+    for (const c of ["VJ-A", "NT-B", "NT-C", "NT-D", "SBC"]) {
+      const issues = run([{ ...ok, student: { ...ok.student, category: c } }]);
+      expect(issues.some((i) => i.code === "category_invalid"), c).toBe(false);
+    }
+  });
+
   it("flags a duplicate APAAR within the school", () => {
     const other = { ...ok, studentId: "s2", grNumber: "1002" };
     const issues = run([ok, other]);

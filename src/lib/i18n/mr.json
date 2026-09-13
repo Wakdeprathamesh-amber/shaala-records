@@ -97,5 +97,13 @@
   "common.loading": "लोड होत आहे…",
   "common.error": "काहीतरी चूक झाली",
   "common.of": "पैकी",
-  "common.showing": "दाखवत आहे"
+  "common.showing": "दाखवत आहे",
+  "doc.character": "चारित्र्य प्रमाणपत्र",
+  "doc.noc": "ना-हरकत प्रमाणपत्र",
+  "doc.bilingual": "द्विभाषिक (मराठी + इंग्रजी)",
+  "field.casteCertNo": "जात प्रमाणपत्र क्र.",
+  "nav.reports": "अहवाल",
+  "report.demographic": "प्रवर्गनिहाय नोंदवही",
+  "report.print": "पीडीएफ छापा",
+  "report.inspection": "तपासणी नमुना — शैक्षणिक वर्ष"
 }

@@ -9,6 +9,7 @@ import { byId, enrollmentHistory } from "@/domain/students/repo";
 import { documentsForStudent } from "@/domain/documents/repo";
 import { dateToMarathiWords, toDevanagariDigits } from "@/lib/marathi/numbers";
 import { setStudentStatus } from "@/domain/students/actions";
+import { CATEGORY_LABEL } from "@/domain/students/schema";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -132,9 +133,13 @@ export default async function StudentDetailPage({
         </Section>
 
         <Section title={t("section.social")}>
-          <Row label={t("field.category")} value={s.category} />
+          <Row
+            label={t("field.category")}
+            value={CATEGORY_LABEL[s.category as keyof typeof CATEGORY_LABEL] ?? s.category}
+          />
           <Row label={t("field.caste")} value={s.caste} />
           <Row label={t("field.subCaste")} value={s.subCaste} />
+          <Row label={t("field.casteCertNo")} value={s.casteCertNo} />
           <Row label={t("field.religion")} value={s.religion} />
           <Row label={t("field.motherTongue")} value={s.motherTongue} />
           <Row label={t("field.nationality")} value={s.nationality} />

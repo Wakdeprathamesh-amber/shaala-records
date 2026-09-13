@@ -11,7 +11,19 @@ import {
   figures,
 } from "./shared";
 
-export const LC_CSS = PRINT_CSS;
+export const LC_CSS =
+  PRINT_CSS +
+  `
+  /* Bilingual labels run longer. Smaller face, tighter cells and a slightly
+     wider label column keep a fully populated certificate — caste cert no.,
+     APAAR, remarks, duplicate banner — on a single A4 sheet. The pagination
+     test holds it there. */
+  .bi.sheet { padding: 6mm 10mm; }
+  .bi table.fields td { padding: 0.35mm 1mm; font-size: 8.2pt; line-height: 1.35; }
+  .bi table.fields td.label { width: 44%; font-size: 7.4pt; }
+  .bi table.fields td.label .en { color: #333; font-weight: 400; font-size: 6.6pt; }
+  .bi .sign-row { margin-top: 6mm; }
+`;
 
 /**
  * Leaving Certificate — शाळा सोडल्याचा दाखला.
@@ -24,83 +36,136 @@ export const LC_CSS = PRINT_CSS;
  * The date of birth appears twice, in figures and in words. That redundancy is
  * the point — it is what makes the date hard to alter after issue, and it is
  * why the Marathi number table has to be right.
+ *
+ * `bilingual` adds an English gloss to every label. Students moving to an
+ * English-medium school or out of state are asked for exactly this, and a
+ * second hand-typed English copy is where transcription errors creep in.
  */
 export function LeavingCertificate({
   p,
   suppressHeader,
+  bilingual = false,
 }: {
   p: DocumentPayload;
   suppressHeader?: boolean;
+  bilingual?: boolean;
 }) {
   const birthPlace = [p.birthVillage, p.birthTaluka, p.birthDistrict, p.birthState]
     .filter(Boolean)
     .join(", ");
 
+  /** Marathi label, with an English gloss on the same line when bilingual.
+   *  Inline rather than stacked: stacking every label two-high pushed a fully
+   *  populated certificate onto a second page, which the pagination test
+   *  caught. */
+  const L = (mr: string, en: string) =>
+    bilingual ? (
+      <>
+        {mr} <span className="en">/ {en.replace(/^\s*\d+\.\s*/, "")}</span>
+      </>
+    ) : (
+      mr
+    );
+
+  const title = bilingual ? "शाळा सोडल्याचा दाखला / LEAVING CERTIFICATE" : "शाळा सोडल्याचा दाखला";
+
   return (
-    <div className="sheet">
+    <div className={`sheet${bilingual ? " bi" : ""}`}>
       <DuplicateMark p={p} />
-      <SchoolHeader p={p} suppress={suppressHeader} title="शाळा सोडल्याचा दाखला" />
+      <SchoolHeader p={p} suppress={suppressHeader} title={title} />
       <SerialLine p={p} />
 
       <table className="fields">
         <tbody>
-          <Field label="१. विद्यार्थ्याचे संपूर्ण नाव" value={<span style={{ fontSize: "10pt" }}>{p.studentNameMr}</span>} />
-          <Field label="   (इंग्रजीत)" value={p.studentNameEn} />
-          <Field label="२. आईचे नाव" value={p.motherNameMr} />
-          <Field label="३. वडिलांचे नाव" value={p.fatherNameMr} />
-          <Field label="४. राष्ट्रीयत्व" value={p.nationality} />
-          <Field label="५. धर्म" value={p.religion} />
-          <Field label="६. जात" value={p.caste} />
-          <Field label="७. पोटजात" value={p.subCaste} />
-          <Field label="८. प्रवर्ग" value={p.category} />
-          <Field label="९. जन्मस्थळ (गाव, तालुका, जिल्हा, राज्य)" value={birthPlace} />
-          <Field label="१०. जन्मतारीख (अंकात)" value={figures(p.dob)} />
           <Field
-            label="     जन्मतारीख (अक्षरात)"
+            label={L("१. विद्यार्थ्याचे संपूर्ण नाव", "1. Student's full name")}
+            value={<span style={{ fontSize: "10pt" }}>{p.studentNameMr}</span>}
+          />
+          <Field label={L("   (इंग्रजीत)", "   (in English)")} value={p.studentNameEn} />
+          <Field label={L("२. आईचे नाव", "2. Mother's name")} value={p.motherNameMr} />
+          <Field label={L("३. वडिलांचे नाव", "3. Father's name")} value={p.fatherNameMr} />
+          <Field label={L("४. राष्ट्रीयत्व", "4. Nationality")} value={p.nationality} />
+          <Field label={L("५. धर्म", "5. Religion")} value={p.religion} />
+          <Field label={L("६. जात", "6. Caste")} value={p.caste} />
+          <Field label={L("७. पोटजात", "7. Sub-caste")} value={p.subCaste} />
+          {p.casteCertNo ? (
+            <Field label={L("   जात प्रमाणपत्र क्र.", "   Caste certificate no.")} value={p.casteCertNo} />
+          ) : null}
+          <Field label={L("८. प्रवर्ग", "8. Category")} value={p.category} />
+          <Field
+            label={L("९. जन्मस्थळ (गाव, तालुका, जिल्हा, राज्य)", "9. Place of birth (village, taluka, district, state)")}
+            value={birthPlace}
+          />
+          <Field label={L("१०. जन्मतारीख (अंकात)", "10. Date of birth (in figures)")} value={figures(p.dob)} />
+          <Field
+            label={L("     जन्मतारीख (अक्षरात)", "     Date of birth (in words)")}
             value={<span style={{ fontSize: "9pt" }}>{p.dobInWordsMr}</span>}
           />
-          <Field label="११. मातृभाषा" value={p.motherTongue} />
-          <Field label="१२. शाळेत प्रवेश घेतल्याचा दिनांक" value={figures(p.admissionDate)} />
-          <Field label="१३. प्रवेशाच्या वेळची इयत्ता" value={p.admissionClass} />
-          <Field label="१४. मागील शाळेत उत्तीर्ण इयत्ता" value={p.lastClassPassed} />
+          <Field label={L("११. मातृभाषा", "11. Mother tongue")} value={p.motherTongue} />
+          <Field label={L("१२. शाळेत प्रवेश घेतल्याचा दिनांक", "12. Date of admission")} value={figures(p.admissionDate)} />
+          <Field label={L("१३. प्रवेशाच्या वेळची इयत्ता", "13. Class at admission")} value={p.admissionClass} />
+          <Field label={L("१४. मागील शाळेत उत्तीर्ण इयत्ता", "14. Last class passed (previous school)")} value={p.lastClassPassed} />
           <Field
-            label="१५. शाळा सोडतेवेळची इयत्ता"
+            label={L("१५. शाळा सोडतेवेळची इयत्ता", "15. Class at the time of leaving")}
             value={
               p.currentClass
                 ? `${p.currentClass}${p.currentDivision ? ` (${p.currentDivision})` : ""}`
                 : "—"
             }
           />
-          <Field label="१६. शाळा सोडल्याचा दिनांक" value={figures(p.dateOfLeaving)} />
-          <Field label="१७. शाळा सोडण्याचे कारण" value={p.reasonMr} />
-          <Field label="१८. प्रगती" value={p.progress} />
-          <Field label="१९. वर्तणूक" value={p.conduct} />
-          <Field label="२०. सर्व देणी दिली आहेत काय?" value={p.duesCleared === false ? "नाही" : "होय"} />
-          {p.apaarId ? <Field label="२१. अपार आयडी" value={toDevanagariDigits(p.apaarId)} /> : null}
-          {p.remarksMr ? <Field label="शेरा" value={p.remarksMr} /> : null}
+          <Field label={L("१६. शाळा सोडल्याचा दिनांक", "16. Date of leaving")} value={figures(p.dateOfLeaving)} />
+          <Field label={L("१७. शाळा सोडण्याचे कारण", "17. Reason for leaving")} value={p.reasonMr} />
+          <Field label={L("१८. प्रगती", "18. Progress")} value={p.progress} />
+          <Field label={L("१९. वर्तणूक", "19. Conduct")} value={p.conduct} />
+          <Field
+            label={L("२०. सर्व देणी दिली आहेत काय?", "20. All dues cleared?")}
+            value={p.duesCleared === false ? (bilingual ? "नाही / No" : "नाही") : bilingual ? "होय / Yes" : "होय"}
+          />
+          {p.apaarId ? (
+            <Field label={L("२१. अपार आयडी", "21. APAAR ID")} value={toDevanagariDigits(p.apaarId)} />
+          ) : null}
+          {p.remarksMr ? <Field label={L("शेरा", "Remarks")} value={p.remarksMr} /> : null}
         </tbody>
       </table>
 
       <p className="small" style={{ marginTop: "3mm", lineHeight: 1.6 }}>
         वरील माहिती शाळेच्या जनरल रजिस्टरमधील नोंदीवरून दिली आहे. सदर माहिती
         बरोबर असल्याचे प्रमाणित करण्यात येते.
+        {bilingual ? (
+          <>
+            <br />
+            <span style={{ color: "#333" }}>
+              The above particulars are taken from the school's General Register and are certified
+              to be correct.
+            </span>
+          </>
+        ) : null}
       </p>
 
       <div className="row small" style={{ marginTop: "3mm" }}>
         <div>
-          ठिकाण: <span className="bold">{p.taluka ?? p.district ?? "—"}</span>
+          {bilingual ? "ठिकाण / Place" : "ठिकाण"}:{" "}
+          <span className="bold">{p.taluka ?? p.district ?? "—"}</span>
         </div>
         <div className="grow" />
         <div>
-          दिनांक: <span className="bold">{figures(p.issuedOn)}</span>
+          {bilingual ? "दिनांक / Date" : "दिनांक"}: <span className="bold">{figures(p.issuedOn)}</span>
         </div>
       </div>
 
-      <Signatures principalName={p.principalNameMr} />
+      <Signatures
+        labels={
+          bilingual
+            ? ["वर्गशिक्षक / Class Teacher", "लिपिक / Clerk", "मुख्याध्यापक / Principal"]
+            : ["वर्गशिक्षक", "लिपिक", "मुख्याध्यापक"]
+        }
+        principalName={p.principalNameMr}
+      />
 
       <p className="tiny center" style={{ marginTop: "5mm", color: "#444" }}>
         हा दाखला संगणकीकृत जनरल रजिस्टरमधून तयार केला आहे.
-        अनुक्रमांक {toDevanagariDigits(p.serialNo)} · यू-डायस {toDevanagariDigits(p.udiseCode)}
+        {bilingual ? " Generated from the computerised General Register." : ""}
+        {" "}अनुक्रमांक {toDevanagariDigits(p.serialNo)} · यू-डायस {toDevanagariDigits(p.udiseCode)}
       </p>
     </div>
   );

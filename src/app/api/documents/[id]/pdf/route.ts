@@ -39,17 +39,20 @@ export async function GET(
   const url = new URL(request.url);
   const format = url.searchParams.get("format");
   const suppressHeader = url.searchParams.get("plain") === "1";
+  const bilingual = url.searchParams.get("lang") === "bi";
 
   const payload = doc.payloadJson as DocumentPayload;
   const pdf = await renderDocumentPdf(payload, {
     format: format === "A4" || format === "A5" ? format : undefined,
     suppressHeader,
+    bilingual,
   });
 
   const name = [
     payload.docType,
     payload.grNumber,
     `sr${payload.serialNo}`,
+    bilingual ? "bilingual" : null,
     payload.isDuplicate ? "duplicate" : null,
   ]
     .filter(Boolean)

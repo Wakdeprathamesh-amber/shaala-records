@@ -6,7 +6,9 @@ import { db } from "@/db/client";
 import { documents, lcDetails, students, users } from "@/db/schema";
 import { scoped, type Ctx } from "@/lib/tenant";
 
-export type DocType = "lc" | "bonafide" | "id_card";
+export type DocType = "lc" | "bonafide" | "id_card" | "character" | "noc";
+
+export const DOC_TYPES: readonly DocType[] = ["lc", "bonafide", "id_card", "character", "noc"];
 
 export async function documentsForStudent(ctx: Ctx, studentId: string) {
   return db

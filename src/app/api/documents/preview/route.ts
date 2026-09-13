@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireCtx } from "@/lib/auth/session";
 import { AuthorizationError } from "@/lib/tenant";
 import { buildPreviewPayload } from "@/domain/documents/preview";
+import { DOC_TYPES, type DocType } from "@/domain/documents/repo";
 import { renderDocumentPdf } from "@/domain/documents/render";
 
 /**
@@ -27,13 +28,14 @@ export async function GET(request: Request) {
   const studentId = url.searchParams.get("student");
   const docType = url.searchParams.get("type");
 
-  if (!studentId || !docType || !["lc", "bonafide", "id_card"].includes(docType)) {
+  if (!studentId || !docType || !(DOC_TYPES as readonly string[]).includes(docType)) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
   const payload = await buildPreviewPayload(ctx, {
     studentId,
-    docType: docType as "lc" | "bonafide" | "id_card",
+    docType: docType as DocType,
+    nocPurposeMr: url.searchParams.get("nocPurposeMr") ?? undefined,
     dateOfLeaving: url.searchParams.get("dateOfLeaving") ?? undefined,
     lastAttended: url.searchParams.get("lastAttended") ?? undefined,
     reasonMr: url.searchParams.get("reasonMr") ?? undefined,
@@ -48,7 +50,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Student not found" }, { status: 404 });
   }
 
-  const pdf = await renderDocumentPdf(payload);
+  const pdf = await renderDocumentPdf(payload, {
+    bilingual: url.searchParams.get("lang") === "bi",
+  });
 
   return new NextResponse(new Uint8Array(pdf), {
     headers: {

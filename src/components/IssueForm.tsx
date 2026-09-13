@@ -5,8 +5,9 @@ import { useFormStatus } from "react-dom";
 
 import { Field } from "@/components/Field";
 import type { IssueFormState } from "@/domain/documents/actions";
+import type { DocType } from "@/domain/documents/repo";
 
-type DocType = "lc" | "bonafide" | "id_card";
+const DOC_TYPES: DocType[] = ["lc", "bonafide", "id_card", "character", "noc"];
 
 const PURPOSES: Array<{ value: string; label: string }> = [
   { value: "scholarship", label: "शिष्यवृत्ती — Scholarship" },
@@ -52,6 +53,10 @@ export function IssueForm({
   const [dateOfLeaving, setDateOfLeaving] = useState("");
   const [reasonMr, setReasonMr] = useState("");
   const [duplicate, setDuplicate] = useState(false);
+  const [nocPurpose, setNocPurpose] = useState("");
+  // A rendering choice, not part of the issued record — the download page
+  // offers both variants of any LC regardless of what was previewed.
+  const [bilingual, setBilingual] = useState(false);
 
   const previewUrl = useMemo(() => {
     const p = new URLSearchParams({ student: studentId, type: docType });
@@ -59,9 +64,11 @@ export function IssueForm({
     if (docType === "lc") {
       if (dateOfLeaving) p.set("dateOfLeaving", dateOfLeaving);
       if (reasonMr) p.set("reasonMr", reasonMr);
+      if (bilingual) p.set("lang", "bi");
     }
+    if (docType === "noc" && nocPurpose) p.set("nocPurposeMr", nocPurpose);
     return `/api/documents/preview?${p.toString()}`;
-  }, [studentId, docType, purpose, dateOfLeaving, reasonMr]);
+  }, [studentId, docType, purpose, dateOfLeaving, reasonMr, nocPurpose, bilingual]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,26rem)_1fr]">
@@ -91,7 +98,7 @@ export function IssueForm({
               {labels.docType}
             </legend>
             <div className="grid gap-2">
-              {(["lc", "bonafide", "id_card"] as DocType[]).map((t) => (
+              {DOC_TYPES.map((t) => (
                 <label
                   key={t}
                   className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border
@@ -155,6 +162,27 @@ export function IssueForm({
               <input type="checkbox" name="duesCleared" value="1" defaultChecked />
               {labels.duesCleared}
             </label>
+            <label className="flex min-h-[44px] items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={bilingual}
+                onChange={(e) => setBilingual(e.target.checked)}
+              />
+              {labels.bilingual}
+            </label>
+          </section>
+        ) : null}
+
+        {docType === "noc" ? (
+          <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <Field
+              name="nocPurposeMr"
+              label={labels.nocPurpose}
+              defaultValue={nocPurpose}
+              onValueChange={setNocPurpose}
+              placeholder="इतर शाळेत प्रवेश घेण्यास"
+            />
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{labels.nocHint}</p>
           </section>
         ) : null}
 

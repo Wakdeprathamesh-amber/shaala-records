@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { DataTable, type Column } from "@/components/DataTable";
 import { requireCtx } from "@/lib/auth/session";
 import { getT } from "@/lib/i18n/server";
-import { register, type DocumentRegisterRow } from "@/domain/documents/repo";
+import { DOC_TYPES, register, type DocType, type DocumentRegisterRow } from "@/domain/documents/repo";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
 
 export const metadata = { title: "दाखले — Documents" };
@@ -22,10 +22,9 @@ export default async function DocumentsPage({
   const t = await getT();
   const raw = await searchParams;
 
-  const docType =
-    raw.type === "lc" || raw.type === "bonafide" || raw.type === "id_card"
-      ? raw.type
-      : undefined;
+  const docType = (DOC_TYPES as readonly string[]).includes(raw.type ?? "")
+    ? (raw.type as DocType)
+    : undefined;
 
   const duplicates =
     raw.dup === "only" || raw.dup === "hide" ? raw.dup : undefined;
@@ -119,6 +118,8 @@ export default async function DocumentsPage({
         {tab("lc", t("doc.lc"))}
         {tab("bonafide", t("doc.bonafide"))}
         {tab("id_card", t("doc.id_card"))}
+        {tab("character", t("doc.character"))}
+        {tab("noc", t("doc.noc"))}
       </div>
 
       <form className="mb-4 grid gap-2 rounded-xl border border-slate-200 bg-white p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto] dark:border-slate-800 dark:bg-slate-900">

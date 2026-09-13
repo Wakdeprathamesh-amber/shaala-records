@@ -9,8 +9,32 @@ import * as z from "zod";
 /** The fixed Maharashtra social category codes. Anything else is rejected
  *  rather than stored, because the government upload maps from this list and
  *  an unrecognised value fails the whole file. */
-export const CATEGORIES = ["OPEN", "SC", "ST", "OBC", "VJNT", "SBC", "EWS"] as const;
+/**
+ * Maharashtra's social categories as the state actually classifies them.
+ *
+ * The first version had a single "VJNT". The MSBSHSE inspection register and
+ * every state scholarship split it four ways — VJ-A (विमुक्त जाती) and NT-B,
+ * NT-C, NT-D (भटक्या जमाती) — and a school that cannot produce those counts
+ * fills them in by hand from paper. UDISE+, being central, collapses all four
+ * plus SBC into OBC; that mapping lives in the export template, not here.
+ */
+export const CATEGORIES = [
+  "OPEN", "SC", "ST", "VJ-A", "NT-B", "NT-C", "NT-D", "OBC", "SBC", "EWS",
+] as const;
 export type Category = (typeof CATEGORIES)[number];
+
+export const CATEGORY_LABEL: Record<Category, string> = {
+  OPEN: "OPEN — खुला",
+  SC: "SC — अनुसूचित जाती",
+  ST: "ST — अनुसूचित जमाती",
+  "VJ-A": "VJ-A — विमुक्त जाती (अ)",
+  "NT-B": "NT-B — भटक्या जमाती (ब)",
+  "NT-C": "NT-C — भटक्या जमाती (क)",
+  "NT-D": "NT-D — भटक्या जमाती (ड)",
+  OBC: "OBC — इतर मागास वर्ग",
+  SBC: "SBC — विशेष मागास प्रवर्ग",
+  EWS: "EWS — आर्थिक दुर्बल घटक",
+};
 
 export const GENDERS = ["male", "female", "other"] as const;
 export const STATUSES = ["studying", "left", "tc_issued"] as const;
@@ -102,6 +126,7 @@ const base = z.object({
 
   caste: z.string().trim().max(60).optional().or(z.literal("")),
   subCaste: z.string().trim().max(60).optional().or(z.literal("")),
+  casteCertNo: z.string().trim().max(40).optional().or(z.literal("")),
   category: z.enum(CATEGORIES),
   religion: z.string().trim().max(40).optional().or(z.literal("")),
   nationality: z.string().trim().max(40).default("Indian"),

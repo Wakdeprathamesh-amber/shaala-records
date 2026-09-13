@@ -162,7 +162,8 @@ export function Field({
   value,
   colSpan,
 }: {
-  label: string;
+  /** A string, or an element — the bilingual LC stacks an English gloss. */
+  label: React.ReactNode;
   value: React.ReactNode;
   colSpan?: number;
 }) {

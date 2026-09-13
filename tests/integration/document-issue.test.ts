@@ -266,6 +266,44 @@ describe("leaving certificate side effects", () => {
   });
 });
 
+describe("character certificate and NOC", () => {
+  it("issues a character certificate on its own serial sequence", async () => {
+    // The test school seeded counters for lc/bonafide/id_card only, so this
+    // also exercises allocateSerial's insert-on-first-use path for a new type.
+    const s = await studentRepo.create(ctx, studentInput as never);
+    const doc = await issueDocument(ctx, { studentId: s.id, docType: "character" });
+    expect(doc.docType).toBe("character");
+    expect(doc.serialNo).toBe(1);
+    expect(doc.payloadJson.studentNameMr).toContain("चाचणी");
+  });
+
+  it("issues an NOC and freezes the purpose into the snapshot", async () => {
+    const s = await studentRepo.create(ctx, studentInput as never);
+    const doc = await issueDocument(ctx, {
+      studentId: s.id,
+      docType: "noc",
+      nocPurposeMr: "क्रीडा स्पर्धेत भाग घेण्यास",
+    });
+    expect(doc.serialNo).toBe(1);
+    expect(doc.payloadJson.nocPurposeMr).toBe("क्रीडा स्पर्धेत भाग घेण्यास");
+  });
+
+  it("keeps the two sequences independent of each other and of the LC", async () => {
+    const s = await studentRepo.create(ctx, studentInput as never);
+    const c = await issueDocument(ctx, { studentId: s.id, docType: "character" });
+    const n = await issueDocument(ctx, { studentId: s.id, docType: "noc" });
+    expect(c.serialNo).toBe(2);
+    expect(n.serialNo).toBe(2);
+  });
+
+  it("does not change the student's status — only a leaving certificate is the act of leaving", async () => {
+    const s = await studentRepo.create(ctx, studentInput as never);
+    await issueDocument(ctx, { studentId: s.id, docType: "character" });
+    await issueDocument(ctx, { studentId: s.id, docType: "noc", nocPurposeMr: "वसतिगृह प्रवेश" });
+    expect((await studentRepo.byId(ctx, s.id))!.status).toBe("studying");
+  });
+});
+
 describe("tenant isolation", () => {
   it("refuses to issue for another school's student", async () => {
     await expect(
