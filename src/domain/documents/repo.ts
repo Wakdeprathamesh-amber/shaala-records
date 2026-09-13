@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, desc, eq, gte, lte } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, lte, or } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { documents, lcDetails, students, users } from "@/db/schema";
@@ -43,9 +43,19 @@ export type DocumentRegisterRow = {
   issuedBy: string;
 };
 
+export type RegisterFilter = {
+  docType?: DocType;
+  from?: string;
+  to?: string;
+  /** Student name in either script, or GR number. */
+  search?: string;
+  duplicates?: "only" | "hide";
+  page?: number;
+};
+
 export async function register(
   ctx: Ctx,
-  filter: { docType?: DocType; from?: string; to?: string; page?: number } = {},
+  filter: RegisterFilter = {},
 ): Promise<{ rows: DocumentRegisterRow[]; total: number; page: number; pageSize: number }> {
   const pageSize = 25;
   const page = filter.page ?? 1;
@@ -54,6 +64,20 @@ export async function register(
   if (filter.docType) conditions.push(eq(documents.docType, filter.docType));
   if (filter.from) conditions.push(gte(documents.issuedOn, filter.from));
   if (filter.to) conditions.push(lte(documents.issuedOn, filter.to));
+  if (filter.duplicates === "only") conditions.push(eq(documents.isDuplicate, true));
+  if (filter.duplicates === "hide") conditions.push(eq(documents.isDuplicate, false));
+  if (filter.search) {
+    const q = `%${filter.search}%`;
+    conditions.push(
+      or(
+        ilike(students.firstNameMr, q),
+        ilike(students.lastNameMr, q),
+        ilike(students.firstNameEn, q),
+        ilike(students.lastNameEn, q),
+        ilike(students.grNumber, q),
+      )!,
+    );
+  }
   const where = and(...conditions);
 
   const rows = await db
@@ -78,7 +102,11 @@ export async function register(
     .limit(pageSize)
     .offset((page - 1) * pageSize);
 
-  const [totalRow] = await db.select({ n: count() }).from(documents).where(where);
+  const [totalRow] = await db
+    .select({ n: count() })
+    .from(documents)
+    .innerJoin(students, eq(students.id, documents.studentId))
+    .where(where);
 
   return {
     rows: rows.map((r) => ({

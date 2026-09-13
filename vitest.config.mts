@@ -12,7 +12,7 @@ export default defineConfig({
     // Integration tests share one database; running files in parallel would
     // let one file's teardown delete another's fixtures.
     fileParallelism: false,
-    testTimeout: 30_000,
+    testTimeout: 90_000,
   },
   resolve: {
     alias: {

@@ -9,6 +9,10 @@ import { toDevanagariDigits } from "@/lib/marathi/numbers";
 
 export const metadata = { title: "दाखले — Documents" };
 
+const FIELD =
+  "min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 " +
+  "dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50";
+
 export default async function DocumentsPage({
   searchParams,
 }: {
@@ -23,12 +27,18 @@ export default async function DocumentsPage({
       ? raw.type
       : undefined;
 
+  const duplicates =
+    raw.dup === "only" || raw.dup === "hide" ? raw.dup : undefined;
+
   const { rows, total, page, pageSize } = await register(ctx, {
     docType,
     from: raw.from || undefined,
     to: raw.to || undefined,
+    search: raw.search || undefined,
+    duplicates,
     page: Number(raw.page) || 1,
   });
+  const activeCount = [raw.search, raw.from, raw.to, raw.dup, docType].filter(Boolean).length;
   const pages = Math.max(1, Math.ceil(total / pageSize));
 
   const typeLabel = (d: DocumentRegisterRow["docType"]) => t(`doc.${d}` as "doc.lc");
@@ -104,12 +114,50 @@ export default async function DocumentsPage({
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {tab(undefined, t("common.showing"))}
+      <div className="mb-3 flex flex-wrap gap-2">
+        {tab(undefined, "सर्व — All")}
         {tab("lc", t("doc.lc"))}
         {tab("bonafide", t("doc.bonafide"))}
         {tab("id_card", t("doc.id_card"))}
       </div>
+
+      <form className="mb-4 grid gap-2 rounded-xl border border-slate-200 bg-white p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto] dark:border-slate-800 dark:bg-slate-900">
+        {docType ? <input type="hidden" name="type" value={docType} /> : null}
+        <input
+          name="search"
+          defaultValue={raw.search ?? ""}
+          placeholder={t("students.searchPlaceholder")}
+          aria-label={t("action.search")}
+          className={FIELD}
+        />
+        <input name="from" type="date" defaultValue={raw.from ?? ""} aria-label="From" className={FIELD} />
+        <input name="to" type="date" defaultValue={raw.to ?? ""} aria-label="To" className={FIELD} />
+        <select name="dup" defaultValue={raw.dup ?? ""} aria-label={t("doc.duplicate")} className={FIELD}>
+          <option value="">मूळ + प्रत — All copies</option>
+          <option value="hide">फक्त मूळ — Originals only</option>
+          <option value="only">फक्त प्रत — Duplicates only</option>
+        </select>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="min-h-[44px] flex-1 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white
+                       hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900"
+          >
+            {t("action.search")}
+          </button>
+          {activeCount > 0 ? (
+            <Link
+              href="/documents"
+              className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3
+                         text-sm text-slate-700 hover:bg-slate-100 dark:border-slate-700
+                         dark:text-slate-200 dark:hover:bg-slate-800"
+              title="Clear filters"
+            >
+              ✕ {activeCount}
+            </Link>
+          ) : null}
+        </div>
+      </form>
 
       <DataTable
         rows={rows}

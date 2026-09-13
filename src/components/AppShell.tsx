@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LOCALE_LABEL, otherLocale, type Locale } from "@/lib/i18n";
+import { THEME_LABEL, nextTheme, type Theme } from "@/lib/theme";
 import { NAV } from "@/lib/nav";
 
 /** Every interactive element is at least 44px tall. The clerk may be using a
@@ -61,6 +62,8 @@ export function AppShell({
   signOutLabel,
   signOutAction,
   setLocaleAction,
+  theme,
+  setThemeAction,
 }: {
   children: React.ReactNode;
   labels: Record<string, string>;
@@ -73,6 +76,8 @@ export function AppShell({
   signOutLabel: string;
   signOutAction: () => Promise<void>;
   setLocaleAction: (formData: FormData) => Promise<void>;
+  theme: Theme;
+  setThemeAction: (formData: FormData) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -105,6 +110,19 @@ export function AppShell({
         >
           <span aria-hidden className="mr-3 opacity-70">⇄</span>
           {LOCALE_LABEL[otherLocale(locale)]}
+        </button>
+      </form>
+      <form action={setThemeAction}>
+        <input type="hidden" name="theme" value={nextTheme(theme)} />
+        <button
+          type="submit"
+          title={THEME_LABEL[nextTheme(theme)][locale]}
+          className={`${TAP} w-full rounded-lg px-3 text-left text-sm text-slate-700
+                      hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800`}
+        >
+          <span aria-hidden className="mr-3 opacity-70">{THEME_LABEL[theme].icon}</span>
+          {THEME_LABEL[theme][locale]}
+          <span className="ml-1 text-xs text-slate-400">→ {THEME_LABEL[nextTheme(theme)][locale]}</span>
         </button>
       </form>
       <form action={signOutAction}>

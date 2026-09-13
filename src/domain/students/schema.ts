@@ -169,11 +169,34 @@ export type StudentInput = z.infer<typeof base>;
 
 export const StatusSchema = z.enum(STATUSES);
 
+export const SORTS = ["gr", "name", "class", "dob", "recent"] as const;
+export type Sort = (typeof SORTS)[number];
+
+/** Divisions as Maharashtra schools write them. */
+export const DIVISIONS = ["अ", "ब", "क", "ड", "इ"] as const;
+
+/**
+ * Lenient on purpose. These values arrive from the URL, which a clerk can
+ * edit, bookmark, or receive from a colleague months after an option was
+ * renamed. An unrecognised value is ignored rather than turned into a 500 —
+ * `.catch()` swaps anything invalid for the default instead of throwing.
+ */
 export const StudentFilterSchema = z.object({
-  search: z.string().trim().max(80).optional(),
-  class: z.string().trim().max(10).optional(),
-  division: z.string().trim().max(10).optional(),
-  status: z.enum(STATUSES).optional(),
-  page: z.coerce.number().int().min(1).default(1),
+  search: z.string().trim().max(80).optional().catch(undefined),
+  class: z.string().trim().max(10).optional().catch(undefined),
+  division: z.string().trim().max(10).optional().catch(undefined),
+  status: z.enum(STATUSES).optional().catch(undefined),
+  gender: z.enum(GENDERS).optional().catch(undefined),
+  category: z.enum(CATEGORIES).optional().catch(undefined),
+  sort: z.enum(SORTS).default("gr").catch("gr"),
+  dir: z.enum(["asc", "desc"]).default("asc").catch("asc"),
+  page: z.coerce.number().int().min(1).default(1).catch(1),
 });
 export type StudentFilter = z.infer<typeof StudentFilterSchema>;
+
+/** Which filter keys are active, for a "clear" affordance and a count badge. */
+export function activeFilters(f: Partial<StudentFilter>): string[] {
+  return (["search", "class", "division", "status", "gender", "category"] as const).filter(
+    (k) => f[k] !== undefined && f[k] !== "",
+  );
+}

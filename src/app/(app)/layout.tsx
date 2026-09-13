@@ -6,7 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { getLocale } from "@/lib/i18n/server";
 import { translator } from "@/lib/i18n";
 
-import { setLocale, signOut } from "./actions";
+import { setLocale, setTheme, signOut } from "./actions";
+import { getTheme } from "@/lib/theme/server";
 
 export default async function AppLayout({
   children,
@@ -20,7 +21,7 @@ export default async function AppLayout({
   // actually caught.
   if (!session) redirect("/login");
 
-  const locale = await getLocale();
+  const [locale, theme] = await Promise.all([getLocale(), getTheme()]);
   const t = translator(locale);
 
   const labels = Object.fromEntries(
@@ -39,6 +40,8 @@ export default async function AppLayout({
       signOutLabel={t("action.signOut")}
       signOutAction={signOut}
       setLocaleAction={setLocale}
+      theme={theme}
+      setThemeAction={setTheme}
     >
       {children}
     </AppShell>

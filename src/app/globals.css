@@ -1,29 +1,15 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/*
+ * Class-based dark mode.
+ *
+ * Tailwind's default `dark:` variant follows the OS preference and nothing
+ * else, which is why the principal on a dark-mode Mac had no way to get a
+ * light UI. Declaring the variant on a `.dark` ancestor class hands control
+ * to a cookie: the server renders the class, so there is no flash on load,
+ * and "system" mode is a tiny inline script that adds the class before paint.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Devanagari-capable system stack. Deliberately not a web font: the school's
    connection is unreliable and every one of these platforms already ships a
@@ -34,6 +20,11 @@ body {
     system-ui, -apple-system, "Segoe UI", Roboto,
     "Nirmala UI", "Noto Sans Devanagari", "Mangal", "Shobhika",
     "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
 }
 
 html {

@@ -55,8 +55,23 @@ export async function list(
   if (filter.status) conditions.push(eq(students.status, filter.status));
   if (filter.class) conditions.push(eq(enrollments.class, filter.class));
   if (filter.division) conditions.push(eq(enrollments.division, filter.division));
+  if (filter.gender) conditions.push(eq(students.gender, filter.gender));
+  if (filter.category) conditions.push(eq(students.category, filter.category));
 
   const where = and(...conditions);
+
+  // Numeric casts so GR "10" does not sort before GR "9", and class "10"
+  // does not sort before class "2".
+  const grNumeric = sql`NULLIF(regexp_replace(${students.grNumber}, '\\D', '', 'g'), '')::bigint`;
+  const classNumeric = sql`NULLIF(regexp_replace(${enrollments.class}, '\\D', '', 'g'), '')::int`;
+  const direction = filter.dir === "desc" ? desc : asc;
+  const orderBy = {
+    gr: [direction(grNumeric)],
+    name: [direction(students.firstNameMr), direction(students.lastNameMr)],
+    class: [direction(classNumeric), asc(enrollments.division), asc(enrollments.rollNo)],
+    dob: [direction(students.dob)],
+    recent: [direction(students.createdAt)],
+  }[filter.sort ?? "gr"];
 
   const rows = await db
     .select({
@@ -81,8 +96,7 @@ export async function list(
       ),
     )
     .where(where)
-    // Numeric ordering: GR "10" must not sort before GR "9".
-    .orderBy(asc(sql`NULLIF(regexp_replace(${students.grNumber}, '\\D', '', 'g'), '')::bigint`))
+    .orderBy(...orderBy)
     .limit(PAGE_SIZE)
     .offset((filter.page - 1) * PAGE_SIZE);
 
