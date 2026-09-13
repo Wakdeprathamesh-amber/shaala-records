@@ -33,21 +33,12 @@ if (!url || url.includes("PROJECT_REF")) {
 }
 
 type SchoolConfig = {
-  school: {
-    sansthaNameMr?: string;
-    mottoMr?: string;
+  /** Mirrors the Settings form, so a school can be onboarded from a file or
+   *  through the screen and end up with the same profile either way. */
+  school: Record<string, string | undefined> & {
     nameMr: string;
     nameEn: string;
     udiseCode: string;
-    boardIndex?: string;
-    recognitionNo?: string;
-    recognitionDetailsMr?: string;
-    address?: string;
-    taluka?: string;
-    district?: string;
-    principalNameMr?: string;
-    medium?: string;
-    managementType?: string;
   };
   academicYear: { label: string; startDate: string; endDate: string };
   principal: { name: string; email?: string; phone?: string };
@@ -98,7 +89,12 @@ async function main() {
     process.exit(1);
   }
 
-  const [school] = await db.insert(schools).values(cfg.school as never).returning();
+  // Blank strings from a hand-edited config become NULL, so the certificate
+  // omits the line rather than printing an empty label.
+  const profile = Object.fromEntries(
+    Object.entries(cfg.school).map(([k, v]) => [k, v === "" ? null : v]),
+  );
+  const [school] = await db.insert(schools).values(profile as never).returning();
 
   const [year] = await db
     .insert(academicYears)

@@ -5,8 +5,34 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod";
 
 import { requireCtx } from "@/lib/auth/session";
+import { UploadError, deleteImage, saveImage } from "@/lib/uploads/store";
 import { StatusSchema, StudentCreateSchema } from "./schema";
 import * as repo from "./repo";
+
+/**
+ * Saves an uploaded photograph, if one was chosen.
+ *
+ * Returns undefined when no file was submitted, so the caller can tell "no
+ * change" apart from "cleared". A failed upload is reported as a field error
+ * rather than throwing — a clerk who picked the wrong file should not lose
+ * the twenty-five fields they just typed.
+ */
+async function savePhoto(
+  formData: FormData,
+  schoolId: string,
+): Promise<{ path?: string | null; error?: string }> {
+  if (formData.get("removePhoto") === "1") return { path: null };
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) return {};
+
+  try {
+    const saved = await saveImage("student-photo", schoolId, Buffer.from(await file.arrayBuffer()));
+    return { path: saved.storedPath };
+  } catch (err) {
+    return { error: err instanceof UploadError ? err.message : "Could not save that image." };
+  }
+}
 
 export type StudentFormState = {
   error?: string;
@@ -71,7 +97,16 @@ export async function createStudent(
     }
   }
 
-  const student = await repo.create(ctx, { ...parsed.data, grNumber: grNumber || undefined });
+  const photo = await savePhoto(formData, ctx.schoolId);
+  if (photo.error) {
+    return { error: photo.error, fieldErrors: { photo: photo.error }, values: submitted };
+  }
+
+  const student = await repo.create(ctx, {
+    ...parsed.data,
+    grNumber: grNumber || undefined,
+    photoPath: photo.path ?? null,
+  });
 
   const cls = String(formData.get("class") ?? "").trim();
   if (cls) {
@@ -105,9 +140,27 @@ export async function updateStudent(
     };
   }
 
-  const updated = await repo.update(ctx, id, parsed.data);
+  const existing = await repo.byId(ctx, id);
+  if (!existing) {
+    return { error: "विद्यार्थी सापडला नाही — Student not found", values: submitted };
+  }
+
+  const photo = await savePhoto(formData, ctx.schoolId);
+  if (photo.error) {
+    return { error: photo.error, fieldErrors: { photo: photo.error }, values: submitted };
+  }
+
+  const updated = await repo.update(ctx, id, {
+    ...parsed.data,
+    ...(photo.path !== undefined ? { photoPath: photo.path } : {}),
+  } as never);
   if (!updated) {
     return { error: "विद्यार्थी सापडला नाही — Student not found", values: submitted };
+  }
+
+  // Only now that the new row is committed is the old file safe to remove.
+  if (photo.path !== undefined && existing.photoPath && existing.photoPath !== photo.path) {
+    await deleteImage(existing.photoPath, ctx.schoolId);
   }
 
   const cls = String(formData.get("class") ?? "").trim();

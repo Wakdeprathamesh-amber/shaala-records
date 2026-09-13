@@ -20,6 +20,7 @@ const base = {
   sansthaNameMr: "सरस्वती प्रतिष्ठान दधीचींना प्रणाम संस्थेचे",
   mottoMr: "तमसो मा ज्योतिर्गमय",
   recognitionNo: "S 11.03.011",
+  jrCollegeIndexNo: "J 11.03.016",
   recognitionDetailsMr:
     "शाळा मान्यता क्रमांक १९ सप्टेंबर १९८३ SSN - 1083/6797 N mash · जा.क्र.शि.उसं/उमाशि/पुवि/स्वअंशगा/मान्यता/१४-१५/९०२७/३० शिक्षण उपसंचालक पुणे विभाग पुणे दि. २९/४/२०१४",
   schoolNameMr: "जिल्हा परिषद प्राथमिक व माध्यमिक विद्यालय, वडगाव",
@@ -33,9 +34,12 @@ const base = {
   grNumber: "1001",
   grNumberMr: "एक हजार एक",
   apaarId: "123456789012",
+  studentId: "20162725030730100001",
   studentNameMr: "आदित्य संजय पाटील",
   studentNameEn: "Aditya Sanjay Patil",
   gender: "male" as const,
+  photoDataUri: null,
+  logoDataUri: null,
   motherNameMr: "सौ. संजाबाई पाटील",
   fatherNameMr: "संजय पाटील",
   dob: "2010-01-01",
@@ -95,7 +99,6 @@ describe("leaving certificate", () => {
       lc.reasonMr!,
       lc.conduct!,
       lc.progress!,
-      lc.principalNameMr!,
       "मुख्याध्यापक",
       "वर्गशिक्षक",
       "लिपिक",
@@ -124,6 +127,43 @@ describe("leaving certificate", () => {
     expect(html).not.toContain("॥");                // no empty motto brackets
     expect(html).not.toContain("शाळेचा मान्यता क्र.");
     expect(html).toContain(lc.schoolNameMr);        // the school itself still prints
+  });
+
+  it("draws the photograph box even when there is no photograph", async () => {
+    // The printed form has an empty ruled box; a box that vanished would give
+    // two different layouts for the same document, and remove the school's
+    // option of pasting one in by hand.
+    const html = await documentHtml({ ...lc, photoDataUri: null });
+    expect(html).toContain("photo-box");
+    expect(html).toContain("छायाचित्र");
+    expect(html).not.toContain("<img");
+  });
+
+  it("embeds the photograph when there is one", async () => {
+    const tiny = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==";
+    const html = await documentHtml({ ...lc, photoDataUri: tiny });
+    expect(html).toContain(tiny);
+    // Embedded, never a path Chromium would have to resolve on disk.
+    expect(html).not.toMatch(/src="\/api\/images/);
+  });
+
+  it("prints the school logo when one is set, and nothing when not", async () => {
+    const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==";
+    // Match the tag, not the class name — the stylesheet always mentions it.
+    const imgTag = /<img[^>]*class="school-logo"/;
+    expect(await documentHtml({ ...lc, logoDataUri: logo })).toMatch(imgTag);
+    expect(await documentHtml({ ...lc, logoDataUri: null })).not.toMatch(imgTag);
+  });
+
+  it("prints no principal or teacher name — the school signs by hand", async () => {
+    const html = await documentHtml(lc);
+    expect(html).toContain("मुख्याध्यापक");
+    expect(html).toContain("वर्गशिक्षक");
+    expect(html).not.toContain("सुनीता");   // the principal's name in the fixture
+  });
+
+  it("carries the statutory warning about altering the certificate", async () => {
+    expect(await documentHtml(lc)).toContain("अनधिकृतरित्या बदल");
   });
 
   it("prints the previous school, which the register records and the LC needs", async () => {
@@ -219,9 +259,14 @@ describe("bonafide", () => {
     expect(await documentHtml({ ...bonafide, conduct: undefined })).toContain("वर्तणूक");
   });
 
-  it("joins religion and caste the way the school writes it", async () => {
-    // Their certificate reads "हिंदू - मराठा" on one line.
-    expect(await documentHtml(bonafide)).toContain("हिंदू - मराठा");
+  it("keeps religion, caste and sub-caste as separate entries", async () => {
+    const html = await documentHtml(bonafide);
+    expect(html).toContain("धर्म");
+    expect(html).toContain("जात");
+    expect(html).toContain("पोटजात");
+    // Not run together: the register holds them separately and so should the
+    // certificate.
+    expect(html).not.toContain("हिंदू - मराठा");
   });
 
   it("states the sentence the purpose requires", async () => {

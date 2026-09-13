@@ -105,5 +105,9 @@
   "nav.reports": "अहवाल",
   "report.demographic": "प्रवर्गनिहाय नोंदवही",
   "report.print": "पीडीएफ छापा",
-  "report.inspection": "तपासणी नमुना — शैक्षणिक वर्ष"
+  "report.inspection": "तपासणी नमुना — शैक्षणिक वर्ष",
+  "field.studentId": "स्टुडंट आय.डी.",
+  "field.photo": "छायाचित्र",
+  "field.photoChoose": "छायाचित्र निवडा",
+  "field.photoRemove": "छायाचित्र काढा"
 }

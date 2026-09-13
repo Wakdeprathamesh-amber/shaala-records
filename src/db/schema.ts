@@ -66,6 +66,7 @@ export const schools = pgTable("schools", {
    *  "सरस्वती प्रतिष्ठान दधीचींना प्रणाम संस्थेचे" and a certificate without it
    *  does not look like theirs. */
   sansthaNameMr: text("sanstha_name_mr"),
+  sansthaNameEn: text("sanstha_name_en"),
   /** The Sanskrit motto at the very top, e.g. "तमसो मा ज्योतिर्गमय". */
   mottoMr: text("motto_mr"),
   nameMr: text("name_mr").notNull(),
@@ -81,10 +82,25 @@ export const schools = pgTable("schools", {
   managementType: text("management_type"),
   medium: text("medium"),
   address: text("address"),
+  addressEn: text("address_en"),
+  /** मु. — the village or locality, kept apart from the rest of the address
+   *  because certificates print it on its own line. */
+  village: text("village"),
+  postOffice: text("post_office"),
+  pincode: text("pincode"),
   taluka: text("taluka"),
+  talukaEn: text("taluka_en"),
   district: text("district"),
+  districtEn: text("district_en"),
+  state: text("state").default("महाराष्ट्र"),
+  phone: text("phone"),
+  email: text("email"),
   logoPath: text("logo_path"),
   principalNameMr: text("principal_name_mr"),
+  principalNameEn: text("principal_name_en"),
+  /** ज्यु. कॉलेज स्कूल इंडेक्स नं. — separate from the school's own
+   *  recognition number when a school runs a junior college. */
+  jrCollegeIndexNo: text("jr_college_index_no"),
   signaturePath: text("signature_path"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -178,6 +194,10 @@ export const students = pgTable(
 
     grNumber: text("gr_number").notNull(),
     apaarId: text("apaar_id"),
+    /** स्टुडंट आय.डी. — the SARAL student ID, printed at the top of the
+     *  leaving certificate. Distinct from APAAR and from Aadhaar; this one is
+     *  a school-system identifier and carries none of Aadhaar's obligations. */
+    studentId: text("student_id"),
     aadhaarVerified: boolean("aadhaar_verified").notNull().default(false),
 
     // Marathi is the statutory name; English is for government uploads.

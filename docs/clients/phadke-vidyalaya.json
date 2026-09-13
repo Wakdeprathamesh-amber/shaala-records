@@ -11,7 +11,17 @@
     "taluka": "भोर",
     "district": "पुणे",
     "medium": "Marathi",
-    "principalNameMr": "TO BE CONFIRMED"
+    "principalNameMr": "",
+    "sansthaNameEn": "Saraswati Pratishthan Dadhichinna Pranam Sanstha",
+    "village": "रावडी",
+    "postOffice": "चिखलगाव",
+    "pincode": "412206",
+    "addressEn": "'Cummins Bhavan', Mu. Rawadi, Po. Chikhalgaon, Ta. Bhor, Dist. Pune – 412206",
+    "talukaEn": "Bhor",
+    "districtEn": "Pune",
+    "state": "महाराष्ट्र",
+    "jrCollegeIndexNo": "J 11.03.016",
+    "principalNameEn": ""
   },
   "academicYear": {
     "label": "2026-27",
@@ -19,7 +29,7 @@
     "endDate": "2027-04-30"
   },
   "principal": {
-    "name": "TO BE CONFIRMED",
+    "name": "मुख्याध्यापक",
     "email": "principal@phadke-vidyalaya.invalid"
   }
 }

@@ -6,6 +6,7 @@ import { useFormStatus } from "react-dom";
 
 import { Field } from "@/components/Field";
 import { FieldPair } from "@/components/FieldPair";
+import { PhotoField } from "@/components/PhotoField";
 import type { StudentFormState } from "@/domain/students/actions";
 import { CATEGORIES, CATEGORY_LABEL } from "@/domain/students/schema";
 
@@ -58,7 +59,7 @@ export function StudentForm({
   const err = (k: string) => state.fieldErrors?.[k];
 
   return (
-    <form action={formAction} className="grid gap-4" noValidate>
+    <form action={formAction} className="grid gap-4" noValidate encType="multipart/form-data">
       {student?.id ? <input type="hidden" name="id" value={String(student.id)} /> : null}
 
       {state.error ? (
@@ -72,6 +73,16 @@ export function StudentForm({
       ) : null}
 
       <Section title={labels.identity}>
+        <PhotoField
+          label={labels.photo}
+          hint={labels.photoHint}
+          chooseLabel={labels.photoChoose}
+          removeLabel={labels.photoRemove}
+          currentSrc={
+            student?.photoPath ? `/api/images/${student.photoPath as string}` : null
+          }
+          error={err("photo")}
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           <Field
             name="grNumber"
@@ -88,6 +99,13 @@ export function StudentForm({
             defaultValue={v("apaarId")}
             inputMode="numeric"
             error={err("apaarId")}
+          />
+          <Field
+            name="studentId"
+            label={labels.studentId}
+            defaultValue={v("studentId")}
+            inputMode="numeric"
+            error={err("studentId")}
           />
         </div>
 

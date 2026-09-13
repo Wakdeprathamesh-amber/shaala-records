@@ -8,6 +8,7 @@ import {
   PRINT_CSS,
   SchoolHeader,
   SerialLine,
+  PhotoBox,
   Signatures,
   classLabel,
   figures,
@@ -72,10 +73,31 @@ export function LeavingCertificate({
   const title = bilingual ? "शाळा सोडल्याचा दाखला / LEAVING CERTIFICATE" : "शाळा सोडल्याचा दाखला";
 
   return (
-    <div className={`sheet${bilingual ? " bi" : ""}`}>
+    <div className={`sheet has-photo${bilingual ? " bi" : ""}`}>
       <DuplicateMark p={p} />
+      <PhotoBox p={p} />
+      {/* The warning the printed form carries above the letterhead. It is
+          part of the document, not decoration — it is what makes an altered
+          certificate an offence rather than a correction. */}
+      {!suppressHeader ? (
+        <p className="tiny center" style={{ marginBottom: "1mm" }}>
+          सूचना — शाळा सोडल्याच्या दाखल्यात अनधिकृतरित्या बदल केल्यास संबंधितांवर
+          कायदेशीर कारवाई करण्यात येईल.
+        </p>
+      ) : null}
       <SchoolHeader p={p} suppress={suppressHeader} title={title} />
       <SerialLine p={p} />
+
+      {p.studentId ? (
+        <table className="fields" style={{ marginBottom: "1mm" }}>
+          <tbody>
+            <Field
+              label={L("स्टुडंट आय.डी.", "Student ID")}
+              value={toDevanagariDigits(p.studentId)}
+            />
+          </tbody>
+        </table>
+      ) : null}
 
       <table className="fields">
         <tbody>
@@ -158,7 +180,7 @@ export function LeavingCertificate({
             ? ["वर्गशिक्षक / Class Teacher", "लिपिक / Clerk", "मुख्याध्यापक / Principal"]
             : ["वर्गशिक्षक", "लिपिक", "मुख्याध्यापक"]
         }
-        principalName={p.principalNameMr}
+       
       />
 
       <p className="tiny center" style={{ marginTop: "5mm", color: "#444" }}>

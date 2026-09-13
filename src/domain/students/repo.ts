@@ -198,7 +198,10 @@ export async function nextGrNumber(
   return String(row?.next ?? 1);
 }
 
-export async function create(ctx: Ctx, input: StudentInput & { grNumber?: string }) {
+export async function create(
+  ctx: Ctx,
+  input: StudentInput & { grNumber?: string; photoPath?: string | null },
+) {
   return db.transaction(async (tx) => {
     const grNumber = input.grNumber?.trim() || (await nextGrNumber(tx as never, ctx));
 

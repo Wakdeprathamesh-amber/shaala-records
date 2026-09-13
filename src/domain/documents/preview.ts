@@ -6,6 +6,7 @@ import { db } from "@/db/client";
 import { academicYears, enrollments, schools, students } from "@/db/schema";
 import { scoped, type Ctx } from "@/lib/tenant";
 import { dateToMarathiWords, numberToMarathiWords } from "@/lib/marathi/numbers";
+import { imageDataUri } from "@/lib/uploads/store";
 
 import type { BonafidePurpose, DocumentPayload, IssueInput } from "./issue";
 
@@ -49,6 +50,10 @@ export async function buildPreviewPayload(
 
   const { student: s, school, enrollment, year } = row;
   const issuedOn = input.issuedOn ?? new Date().toISOString().slice(0, 10);
+  const [photoDataUri, logoDataUri] = await Promise.all([
+    imageDataUri(s.photoPath, ctx.schoolId),
+    imageDataUri(school.logoPath, ctx.schoolId),
+  ]);
   const grDigits = Number.parseInt(s.grNumber.replace(/\D/g, ""), 10);
 
   return {
@@ -65,6 +70,7 @@ export async function buildPreviewPayload(
     udiseCode: school.udiseCode,
     boardIndex: school.boardIndex,
     recognitionNo: school.recognitionNo,
+    jrCollegeIndexNo: school.jrCollegeIndexNo,
     recognitionDetailsMr: school.recognitionDetailsMr,
     schoolAddress: school.address,
     taluka: school.taluka,
@@ -74,9 +80,12 @@ export async function buildPreviewPayload(
     grNumber: s.grNumber,
     grNumberMr: Number.isFinite(grDigits) ? numberToMarathiWords(grDigits) : s.grNumber,
     apaarId: s.apaarId,
+    studentId: s.studentId,
     studentNameMr: [s.firstNameMr, s.middleNameMr, s.lastNameMr].filter(Boolean).join(" "),
     studentNameEn: [s.firstNameEn, s.middleNameEn, s.lastNameEn].filter(Boolean).join(" "),
     gender: s.gender,
+    photoDataUri,
+    logoDataUri,
     motherNameMr: s.motherNameMr,
     fatherNameMr: s.fatherNameMr,
 
@@ -115,7 +124,7 @@ export async function buildPreviewPayload(
           remarksMr: input.remarksMr ?? null,
         }
       : {}),
-    ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other" } : {}),
+    ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other", purposeOtherMr: input.purposeOtherMr ?? null } : {}),
     ...(input.docType === "noc" ? { nocPurposeMr: input.nocPurposeMr ?? null } : {}),
   };
 }

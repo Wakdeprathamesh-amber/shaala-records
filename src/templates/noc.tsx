@@ -81,7 +81,7 @@ export function NocCertificate({
         </div>
       </div>
 
-      <Signatures labels={["लिपिक", "", "मुख्याध्यापक"]} principalName={p.principalNameMr} />
+      <Signatures labels={["लिपिक", "", "मुख्याध्यापक"]} />
     </div>
   );
 }

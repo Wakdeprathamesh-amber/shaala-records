@@ -42,15 +42,37 @@ export default async function SettingsPage() {
               action={saveSchool}
               school={school as unknown as Record<string, unknown>}
               labels={{
-                name: "शाळेचे नाव — Name",
+                gIdentity: "ओळख — Identity",
+                gRecognition: "मान्यता — Recognition",
+                gRecognitionHint:
+                  "जे उपलब्ध नसेल ते रिकामे ठेवा — दाखल्यावर फक्त भरलेलीच माहिती छापली जाते. Leave blank what you do not have; the certificate prints only what is filled in.",
+                gAddress: "पत्ता — Address",
+                gContact: "संपर्क व प्रोफाइल — Contact and profile",
+                logo: "शाळेचे बोधचिन्ह — School logo",
+                logoHint: "ऐच्छिक · JPG, PNG किंवा WebP",
+                logoChoose: "बोधचिन्ह निवडा",
+                logoRemove: "बोधचिन्ह काढा",
                 sanstha: "संस्थेचे नाव — Trust / society",
                 motto: "बोधवाक्य — Motto",
+                name: "शाळेचे नाव — School name",
                 recognitionNo: "शाळेचा मान्यता क्र.",
+                jrIndex: "ज्यु. कॉलेज इंडेक्स नं.",
+                boardIndex: "बोर्ड निर्देशांक — Board index",
                 recognitionDetails: "मान्यता तपशील — Recognition order details",
-                taluka: t("field.birthTaluka"),
-                district: t("field.birthDistrict"),
-                address: "पत्ता — Address",
-                principal: "मुख्याध्यापक — Principal",
+                village: "मु. — Village",
+                postOffice: "पो. — Post office",
+                pincode: "पिन कोड — Pincode",
+                taluka: "तालुका — Taluka",
+                district: "जिल्हा — District",
+                state: "राज्य — State",
+                address: "संपूर्ण पत्ता — Full address",
+                phone: "दूरध्वनी — Phone",
+                email: "ईमेल — Email",
+                medium: "माध्यम — Medium",
+                management: "व्यवस्थापन — Management",
+                principal: "मुख्याध्यापकांचे नाव — Principal's name",
+                principalNote:
+                  "दाखल्यावर नाव छापले जात नाही — फक्त 'मुख्याध्यापक' असे लिहून सहीसाठी जागा ठेवली जाते. The name is not printed on certificates; only the designation, with space to sign and stamp.",
                 save: t("action.save"),
               }}
             />

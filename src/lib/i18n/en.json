@@ -105,5 +105,9 @@
   "nav.reports": "Reports",
   "report.demographic": "Demographic register",
   "report.print": "Print PDF",
-  "report.inspection": "Inspection format — academic year"
+  "report.inspection": "Inspection format — academic year",
+  "field.studentId": "Student ID (SARAL)",
+  "field.photo": "Photograph",
+  "field.photoChoose": "Choose photo",
+  "field.photoRemove": "Remove photo"
 }

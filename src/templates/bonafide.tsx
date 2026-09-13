@@ -7,6 +7,7 @@ import {
   PRINT_CSS,
   SchoolHeader,
   SerialLine,
+  PhotoBox,
   Signatures,
   classLabel,
   figures,
@@ -78,8 +79,9 @@ export function BonafideCertificate({
     .join(", ");
 
   return (
-    <div className="sheet bona">
+    <div className="sheet bona has-photo">
       <DuplicateMark p={p} />
+      <PhotoBox p={p} />
       <SchoolHeader p={p} suppress={suppressHeader} title="बोनाफाईड प्रमाणपत्र" />
       <SerialLine p={p} />
 
@@ -102,9 +104,11 @@ export function BonafideCertificate({
       </p>
 
       <p style={{ marginTop: "2mm" }}>
-        आमच्या दप्तरी असलेल्या रेकॉर्डप्रमाणे {hisF(p.gender)} जात{" "}
-        <span className="bold">{[p.religion, p.caste].filter(Boolean).join(" - ") || "—"}</span>{" "}
-        असून जन्मतारीख <span className="bold">{figures(p.dob)}</span> (अक्षरी{" "}
+        आमच्या दप्तरी असलेल्या रेकॉर्डप्रमाणे {hisF(p.gender)} धर्म{" "}
+        <span className="bold">{p.religion || "—"}</span> व जात{" "}
+        <span className="bold">{p.caste || "—"}</span>
+        {p.subCaste ? <> (पोटजात <span className="bold">{p.subCaste}</span>)</> : null}
+        {" "}असून जन्मतारीख <span className="bold">{figures(p.dob)}</span> (अक्षरी{" "}
         <span className="bold">{p.dobInWordsMr}</span>) अशी आहे.
         {birthPlace ? (
           <>
@@ -137,11 +141,16 @@ export function BonafideCertificate({
       </table>
 
       <p style={{ marginTop: "3mm" }}>
-        {PURPOSE_SENTENCE[purpose]}
+        {purpose === "other" && p.purposeOtherMr
+          ? `सदर दाखला ${p.purposeOtherMr} या प्रयोजनासाठी देण्यात येत आहे.`
+          : PURPOSE_SENTENCE[purpose]}
       </p>
 
       <p className="small" style={{ marginTop: "3mm" }}>
-        प्रयोजन: <span className="bold">{PURPOSE_LABEL[purpose]}</span>
+        प्रयोजन:{" "}
+        <span className="bold">
+          {purpose === "other" && p.purposeOtherMr ? p.purposeOtherMr : PURPOSE_LABEL[purpose]}
+        </span>
       </p>
 
       <div className="row small" style={{ marginTop: "4mm" }}>
@@ -154,7 +163,7 @@ export function BonafideCertificate({
         </div>
       </div>
 
-      <Signatures labels={["लिपिक", "", "मुख्याध्यापक"]} principalName={p.principalNameMr} />
+      <Signatures labels={["लिपिक", "", "मुख्याध्यापक"]} />
     </div>
   );
 }

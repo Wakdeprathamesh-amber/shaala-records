@@ -81,7 +81,7 @@ export function CharacterCertificate({
         </div>
       </div>
 
-      <Signatures labels={["वर्गशिक्षक", "", "मुख्याध्यापक"]} principalName={p.principalNameMr} />
+      <Signatures labels={["वर्गशिक्षक", "", "मुख्याध्यापक"]} />
     </div>
   );
 }

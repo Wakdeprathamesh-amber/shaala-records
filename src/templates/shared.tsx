@@ -61,6 +61,17 @@ export const PRINT_CSS = `
     font-size: 48pt; color: rgba(180, 0, 0, 0.13);
     transform: rotate(-28deg); font-weight: 700; letter-spacing: 0.1em;
   }
+  .photo-box {
+    width: 24mm; height: 30mm;
+    border: 0.6pt solid #444;
+    position: absolute; top: 8mm; right: 12mm;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; background: #fff;
+  }
+  .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-box .empty { font-size: 6pt; color: #999; text-align: center; line-height: 1.3; }
+  .has-photo header { padding-right: 28mm; }
+  .school-logo { height: 16mm; width: auto; margin-bottom: 1mm; }
   .dup-banner {
     border: 1.2pt solid #b00; color: #b00; font-weight: 700;
     padding: 0.6mm 2mm; display: inline-block; font-size: 8.5pt; margin-bottom: 1mm;
@@ -98,6 +109,10 @@ export function SchoolHeader({
     <header className="center" style={{ marginBottom: "2.5mm" }}>
       {/* Motto, then trust, then the school. This is the order every
           Maharashtra letterhead uses, and a principal checks it first. */}
+      {p.logoDataUri ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="school-logo" src={p.logoDataUri} alt="" />
+      ) : null}
       {p.mottoMr ? <div className="tiny">॥ {p.mottoMr} ॥</div> : null}
       {p.sansthaNameMr ? <div className="small">{p.sansthaNameMr}</div> : null}
       <div className="bold" style={{ fontSize: "12.5pt", lineHeight: 1.25 }}>
@@ -111,6 +126,7 @@ export function SchoolHeader({
         {"  |  "}
         यू-डायस क्र.: {toDevanagariDigits(p.udiseCode)}
         {p.recognitionNo ? `  |  शाळेचा मान्यता क्र.: ${p.recognitionNo}` : ""}
+        {p.jrCollegeIndexNo ? `  |  ज्यु. कॉलेज इंडेक्स नं.: ${p.jrCollegeIndexNo}` : ""}
         {p.boardIndex ? `  |  बोर्ड निर्देशांक: ${p.boardIndex}` : ""}
       </div>
       {p.recognitionDetailsMr ? (
@@ -128,6 +144,27 @@ export function SchoolHeader({
         {title}
       </div>
     </header>
+  );
+}
+
+/**
+ * The photograph box, top right, where the school pastes one by hand today.
+ *
+ * Always drawn, even with no photograph — an empty ruled box is what the
+ * printed form has, and it leaves the school the option of pasting one. A box
+ * that vanished when the record had no picture would give two different
+ * certificate layouts for the same document.
+ */
+export function PhotoBox({ p }: { p: DocumentPayload }) {
+  return (
+    <div className="photo-box">
+      {p.photoDataUri ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.photoDataUri} alt="" />
+      ) : (
+        <span className="empty">छायाचित्र</span>
+      )}
+    </div>
   );
 }
 
@@ -161,22 +198,25 @@ export function DuplicateMark({ p }: { p: DocumentPayload }) {
   );
 }
 
+/**
+ * Signature blocks: the role, a rule to sign above, and nothing else.
+ *
+ * We deliberately do not print the principal's or teacher's name. The school
+ * signs and stamps by hand, and a printed name under a blank rule looks like
+ * an unsigned document — worse, it goes stale the moment a principal changes
+ * and every certificate in the file then names the wrong person.
+ */
 export function Signatures({
   labels = ["वर्गशिक्षक", "लिपिक", "मुख्याध्यापक"],
-  principalName,
 }: {
   labels?: [string, string, string] | string[];
-  principalName?: string | null;
 }) {
   return (
     <div className="sign-row">
       {labels.map((l, i) => (
-        <div className="sign" key={l}>
+        <div className="sign" key={`${l}-${i}`}>
           <div className="line" />
           <div>{l}</div>
-          {i === labels.length - 1 && principalName ? (
-            <div className="tiny">{principalName}</div>
-          ) : null}
         </div>
       ))}
     </div>

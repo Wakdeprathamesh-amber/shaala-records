@@ -108,6 +108,7 @@ export default async function StudentDetailPage({
         <Section title={t("section.identity")}>
           <Row label={t("students.gr")} value={toDevanagariDigits(s.grNumber)} />
           <Row label={t("field.apaarId")} value={s.apaarId} />
+          <Row label={t("field.studentId")} value={s.studentId} />
           <Row label={`${t("students.name")} (${t("field.marathi")})`} value={nameMr} />
           <Row label={`${t("students.name")} (${t("field.english")})`} value={nameEn} />
           <Row label={t("students.gender")} value={t(`gender.${s.gender}` as "gender.male")} />

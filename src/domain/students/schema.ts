@@ -162,6 +162,15 @@ const base = z.object({
     .regex(/^\d{12}$/, { error: "APAAR ID is exactly 12 digits" })
     .optional()
     .or(z.literal("")),
+
+  /** SARAL student ID. Length is not fixed across years, so this only checks
+   *  that it is digits — a stricter rule would reject valid older records. */
+  studentId: z
+    .string()
+    .trim()
+    .regex(/^\d{6,20}$/, { error: "Student ID should be digits only" })
+    .optional()
+    .or(z.literal("")),
 });
 
 /** Cross-field rules that cannot be expressed on a single field. */

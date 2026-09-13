@@ -27,10 +27,27 @@ const IssueSchema = z
       .optional(),
 
     nocPurposeMr: z.string().trim().max(200).optional().or(z.literal("")),
+    purposeOtherMr: z.string().trim().max(200).optional().or(z.literal("")),
   })
   .refine((v) => v.docType !== "lc" || Boolean(v.dateOfLeaving), {
     error: "शाळा सोडल्याचा दिनांक आवश्यक — Date of leaving is required",
     path: ["dateOfLeaving"],
+  })
+  // A certificate that does not say why it was issued is worth less to the
+  // office receiving it, and the register cannot answer an inspector's
+  // "why did this child leave" years later.
+  .refine((v) => v.docType !== "lc" || Boolean(v.reasonMr?.trim()), {
+    error: "शाळा सोडण्याचे कारण आवश्यक — Reason for leaving is required",
+    path: ["reasonMr"],
+  })
+  .refine((v) => v.docType !== "bonafide" || Boolean(v.purpose), {
+    error: "प्रयोजन निवडा — Choose what the certificate is for",
+    path: ["purpose"],
+  })
+  // "इतर" on its own tells the receiving office nothing.
+  .refine((v) => v.docType !== "bonafide" || v.purpose !== "other" || Boolean(v.purposeOtherMr?.trim()), {
+    error: "प्रयोजन लिहा — Write what it is for",
+    path: ["purposeOtherMr"],
   });
 
 export type IssueFormState = {
@@ -82,6 +99,7 @@ export async function issue(
       remarksMr: d.remarksMr || undefined,
       duesCleared: d.duesCleared,
       purpose: d.purpose,
+      purposeOtherMr: d.purposeOtherMr || undefined,
       nocPurposeMr: d.nocPurposeMr || undefined,
     });
 

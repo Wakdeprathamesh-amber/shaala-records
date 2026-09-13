@@ -6,6 +6,10 @@ import type { T } from "@/lib/i18n";
 export function studentFormLabels(t: T): Record<string, string> {
   return {
     identity: t("section.identity"),
+    photo: t("field.photo"),
+    photoHint: t("field.optional"),
+    photoChoose: t("field.photoChoose"),
+    photoRemove: t("field.photoRemove"),
     birth: t("section.birth"),
     family: t("section.family"),
     social: t("section.social"),
@@ -14,6 +18,7 @@ export function studentFormLabels(t: T): Record<string, string> {
     gr: t("students.gr"),
     autoAssigned: t("field.optional"),
     apaar: t("field.apaarId"),
+    studentId: t("field.studentId"),
     studentName: t("students.name"),
     middleName: t("field.middleName"),
     surname: t("field.lastName"),

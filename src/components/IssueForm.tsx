@@ -150,8 +150,11 @@ export function IssueForm({
             <Field
               name="reasonMr"
               label={labels.reason}
+              required
               defaultValue={reasonMr}
               onValueChange={setReasonMr}
+              error={state.fieldErrors?.reasonMr}
+              placeholder="पुढील शिक्षणासाठी"
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <Field name="progress" label={labels.progress} defaultValue="समाधानकारक" />
@@ -195,7 +198,19 @@ export function IssueForm({
               defaultValue={purpose}
               onValueChange={setPurpose}
               options={PURPOSES}
+              error={state.fieldErrors?.purpose}
             />
+            {purpose === "other" ? (
+              <div className="mt-3">
+                <Field
+                  name="purposeOtherMr"
+                  label={labels.purposeOther}
+                  required
+                  error={state.fieldErrors?.purposeOtherMr}
+                  placeholder="उदा. वसतिगृह प्रवेशासाठी"
+                />
+              </div>
+            ) : null}
           </section>
         ) : null}
 

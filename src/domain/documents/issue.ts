@@ -15,6 +15,8 @@ import {
 import { scoped, type Ctx } from "@/lib/tenant";
 import { dateToMarathiWords, numberToMarathiWords } from "@/lib/marathi/numbers";
 
+import { imageDataUri } from "@/lib/uploads/store";
+
 import { allocateSerial } from "./serial";
 import { originalFor, type DocType } from "./repo";
 
@@ -44,6 +46,8 @@ export type IssueInput = {
 
   // Bonafide
   purpose?: BonafidePurpose;
+  /** Free text, required when purpose is "other". */
+  purposeOtherMr?: string;
 
   // NOC — what the certificate is for, in the school's own words.
   nocPurposeMr?: string;
@@ -72,6 +76,7 @@ export type DocumentPayload = {
   udiseCode: string;
   boardIndex: string | null;
   recognitionNo: string | null;
+  jrCollegeIndexNo: string | null;
   recognitionDetailsMr: string | null;
   schoolAddress: string | null;
   taluka: string | null;
@@ -81,10 +86,17 @@ export type DocumentPayload = {
   grNumber: string;
   grNumberMr: string;
   apaarId: string | null;
+  studentId: string | null;
   studentNameMr: string;
   studentNameEn: string;
   /** Drives the gendered Marathi forms on every certificate. */
   gender: "male" | "female" | "other" | null;
+  /** The student's photograph as a data URI, or null. Resolved at issue time
+   *  and frozen into the snapshot like everything else: a certificate should
+   *  reprint years later with the face that was on it, not a newer one. */
+  photoDataUri: string | null;
+  /** The school's logo, likewise. */
+  logoDataUri: string | null;
   motherNameMr: string | null;
   fatherNameMr: string | null;
 
@@ -123,6 +135,7 @@ export type DocumentPayload = {
 
   // Bonafide only
   purpose?: BonafidePurpose;
+  purposeOtherMr?: string | null;
 
   // NOC only
   nocPurposeMr?: string | null;
@@ -211,6 +224,14 @@ export async function issueDocument(
     const serialNo =
       reusedSerial ?? (await allocateSerial(tx as never, ctx, input.docType));
 
+    // Read from disk inside the transaction but before the insert: a missing
+    // file yields null rather than failing the issue. A certificate without a
+    // photograph is still a valid certificate.
+    const [photoDataUri, logoDataUri] = await Promise.all([
+      imageDataUri(s.photoPath, ctx.schoolId),
+      imageDataUri(school.logoPath, ctx.schoolId),
+    ]);
+
     const payload: DocumentPayload = {
       version: 1,
       docType: input.docType,
@@ -225,6 +246,7 @@ export async function issueDocument(
       udiseCode: school.udiseCode,
       boardIndex: school.boardIndex,
       recognitionNo: school.recognitionNo,
+      jrCollegeIndexNo: school.jrCollegeIndexNo,
       recognitionDetailsMr: school.recognitionDetailsMr,
       schoolAddress: school.address,
       taluka: school.taluka,
@@ -237,9 +259,12 @@ export async function issueDocument(
         return Number.isFinite(n) ? numberToMarathiWords(n) : s.grNumber;
       })(),
       apaarId: s.apaarId,
+      studentId: s.studentId,
       studentNameMr: fullName(s.firstNameMr, s.middleNameMr, s.lastNameMr),
       studentNameEn: fullName(s.firstNameEn, s.middleNameEn, s.lastNameEn),
       gender: s.gender,
+      photoDataUri,
+      logoDataUri,
       motherNameMr: s.motherNameMr,
       fatherNameMr: s.fatherNameMr,
 
@@ -280,7 +305,7 @@ export async function issueDocument(
             remarksMr: input.remarksMr ?? null,
           }
         : {}),
-      ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other" } : {}),
+      ...(input.docType === "bonafide" ? { purpose: input.purpose ?? "other", purposeOtherMr: input.purposeOtherMr ?? null } : {}),
       ...(input.docType === "noc" ? { nocPurposeMr: input.nocPurposeMr ?? null } : {}),
     };
 
