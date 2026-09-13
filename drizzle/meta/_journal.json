@@ -22,6 +22,13 @@
       "when": 1789275432804,
       "tag": "0002_character_noc_caste_cert",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789308692188,
+      "tag": "0003_school_identity_block",
+      "breakpoints": true
     }
   ]
 }

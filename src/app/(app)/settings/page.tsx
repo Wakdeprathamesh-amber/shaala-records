@@ -43,6 +43,10 @@ export default async function SettingsPage() {
               school={school as unknown as Record<string, unknown>}
               labels={{
                 name: "शाळेचे नाव — Name",
+                sanstha: "संस्थेचे नाव — Trust / society",
+                motto: "बोधवाक्य — Motto",
+                recognitionNo: "शाळेचा मान्यता क्र.",
+                recognitionDetails: "मान्यता तपशील — Recognition order details",
                 taluka: t("field.birthTaluka"),
                 district: t("field.birthDistrict"),
                 address: "पत्ता — Address",

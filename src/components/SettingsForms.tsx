@@ -58,17 +58,21 @@ export function SchoolForm({
   return (
     <form action={formAction} className="grid gap-3" noValidate>
       <Banner state={state} />
+      <Field name="sansthaNameMr" label={labels.sanstha} defaultValue={v("sansthaNameMr")} />
+      <Field name="mottoMr" label={labels.motto} defaultValue={v("mottoMr")} placeholder="तमसो मा ज्योतिर्गमय" />
       <div className="grid gap-3 sm:grid-cols-2">
         <Field name="nameMr" label={`${labels.name} (मराठी)`} defaultValue={v("nameMr")} required error={err("nameMr")} />
         <Field name="nameEn" label={`${labels.name} (English)`} defaultValue={v("nameEn")} required error={err("nameEn")} />
         <Field name="udiseCode" label="UDISE" defaultValue={v("udiseCode")} required inputMode="numeric" error={err("udiseCode")} />
         <Field name="boardIndex" label="Board index" defaultValue={v("boardIndex")} error={err("boardIndex")} />
+        <Field name="recognitionNo" label={labels.recognitionNo} defaultValue={v("recognitionNo")} />
         <Field name="managementType" label="Management" defaultValue={v("managementType")} />
         <Field name="medium" label="Medium" defaultValue={v("medium")} />
         <Field name="taluka" label={labels.taluka} defaultValue={v("taluka")} />
         <Field name="district" label={labels.district} defaultValue={v("district")} />
       </div>
       <Field name="address" label={labels.address} defaultValue={v("address")} />
+      <Field name="recognitionDetailsMr" label={labels.recognitionDetails} defaultValue={v("recognitionDetailsMr")} />
       <Field name="principalNameMr" label={labels.principal} defaultValue={v("principalNameMr")} />
       <div><Submit label={labels.save} /></div>
     </form>

@@ -17,6 +17,11 @@ const base = {
   issuedOn: "2026-09-12",
   serialNo: 7,
   isDuplicate: false,
+  sansthaNameMr: "सरस्वती प्रतिष्ठान दधीचींना प्रणाम संस्थेचे",
+  mottoMr: "तमसो मा ज्योतिर्गमय",
+  recognitionNo: "S 11.03.011",
+  recognitionDetailsMr:
+    "शाळा मान्यता क्रमांक १९ सप्टेंबर १९८३ SSN - 1083/6797 N mash · जा.क्र.शि.उसं/उमाशि/पुवि/स्वअंशगा/मान्यता/१४-१५/९०२७/३० शिक्षण उपसंचालक पुणे विभाग पुणे दि. २९/४/२०१४",
   schoolNameMr: "जिल्हा परिषद प्राथमिक व माध्यमिक विद्यालय, वडगाव",
   schoolNameEn: "Zilla Parishad Primary & Secondary School, Wadgaon",
   udiseCode: "27251000101",
@@ -101,6 +106,22 @@ describe("leaving certificate", () => {
     const html = await documentHtml(lc);
     expect(html).toContain("०१/०१/२०१०");       // figures, Devanagari
     expect(html).toContain("एक जानेवारी दोन हजार दहा"); // words
+  });
+
+  it("prints the trust, motto and recognition numbers from the letterhead", async () => {
+    const html = await documentHtml(lc);
+    expect(html).toContain("सरस्वती प्रतिष्ठान");   // trust, above the school name
+    expect(html).toContain("तमसो मा ज्योतिर्गमय");  // motto, at the very top
+    expect(html).toContain("S 11.03.011");          // शाळेचा मान्यता क्र.
+    expect(html).toContain("SSN - 1083/6797");      // recognition order line
+  });
+
+  it("omits the identity block cleanly when a school has not filled it in", async () => {
+    const bare = { ...lc, sansthaNameMr: null, mottoMr: null, recognitionNo: null, recognitionDetailsMr: null };
+    const html = await documentHtml(bare);
+    expect(html).not.toContain("॥");                // no empty motto brackets
+    expect(html).not.toContain("शाळेचा मान्यता क्र.");
+    expect(html).toContain(lc.schoolNameMr);        // the school itself still prints
   });
 
   it("prints the UDISE code and board index", async () => {

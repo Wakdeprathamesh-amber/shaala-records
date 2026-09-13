@@ -65,10 +65,14 @@ export type DocumentPayload = {
   serialNo: number;
   isDuplicate: boolean;
 
+  sansthaNameMr: string | null;
+  mottoMr: string | null;
   schoolNameMr: string;
   schoolNameEn: string;
   udiseCode: string;
   boardIndex: string | null;
+  recognitionNo: string | null;
+  recognitionDetailsMr: string | null;
   schoolAddress: string | null;
   taluka: string | null;
   district: string | null;
@@ -211,10 +215,14 @@ export async function issueDocument(
       serialNo,
       isDuplicate: Boolean(input.duplicate),
 
+      sansthaNameMr: school.sansthaNameMr,
+      mottoMr: school.mottoMr,
       schoolNameMr: school.nameMr,
       schoolNameEn: school.nameEn,
       udiseCode: school.udiseCode,
       boardIndex: school.boardIndex,
+      recognitionNo: school.recognitionNo,
+      recognitionDetailsMr: school.recognitionDetailsMr,
       schoolAddress: school.address,
       taluka: school.taluka,
       district: school.district,

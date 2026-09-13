@@ -78,6 +78,10 @@ export function SchoolHeader({
 
   return (
     <header className="center" style={{ marginBottom: "2.5mm" }}>
+      {/* Motto, then trust, then the school. This is the order every
+          Maharashtra letterhead uses, and a principal checks it first. */}
+      {p.mottoMr ? <div className="tiny">॥ {p.mottoMr} ॥</div> : null}
+      {p.sansthaNameMr ? <div className="small">{p.sansthaNameMr}</div> : null}
       <div className="bold" style={{ fontSize: "12.5pt", lineHeight: 1.25 }}>
         {p.schoolNameMr}
       </div>
@@ -88,8 +92,12 @@ export function SchoolHeader({
         {p.district ? `, जि. ${p.district}` : ""}
         {"  |  "}
         यू-डायस क्र.: {toDevanagariDigits(p.udiseCode)}
+        {p.recognitionNo ? `  |  शाळेचा मान्यता क्र.: ${p.recognitionNo}` : ""}
         {p.boardIndex ? `  |  बोर्ड निर्देशांक: ${p.boardIndex}` : ""}
       </div>
+      {p.recognitionDetailsMr ? (
+        <div className="tiny" style={{ color: "#333" }}>{p.recognitionDetailsMr}</div>
+      ) : null}
       <div
         className="bold"
         style={{

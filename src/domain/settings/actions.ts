@@ -10,6 +10,10 @@ import * as repo from "./repo";
 export type SettingsState = { error?: string; ok?: string; fieldErrors?: Record<string, string> };
 
 const SchoolSchema = z.object({
+  sansthaNameMr: z.string().trim().max(160).optional().or(z.literal("")),
+  mottoMr: z.string().trim().max(80).optional().or(z.literal("")),
+  recognitionNo: z.string().trim().max(60).optional().or(z.literal("")),
+  recognitionDetailsMr: z.string().trim().max(400).optional().or(z.literal("")),
   nameMr: z.string().trim().min(1, { error: "शाळेचे नाव आवश्यक — School name is required" }),
   nameEn: z.string().trim().min(1, { error: "English name is required" }),
   udiseCode: z.string().trim().regex(/^\d{11}$/, { error: "UDISE code is exactly 11 digits" }),

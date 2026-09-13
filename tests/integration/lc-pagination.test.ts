@@ -16,16 +16,25 @@ afterAll(async () => {
   await closePdfRenderer();
 });
 
-/** The worst case: every optional field populated with a long value. */
+/**
+ * The worst case, taken from the first client's actual letterhead: a trust
+ * name, a motto, three recognition-order lines, a hyphenated surname and
+ * every optional field populated. Anything that fits this fits a ZP school.
+ */
 const worstCase: DocumentPayload = {
   version: 1,
   docType: "lc",
   issuedOn: "2026-09-12",
   serialNo: 1247,
   isDuplicate: false,
-  schoolNameMr: "जिल्हा परिषद प्राथमिक व माध्यमिक विद्यालय, वडगाव बुद्रुक",
-  schoolNameEn: "Zilla Parishad Primary and Secondary School, Wadgaon Budruk",
-  udiseCode: "27251000101",
+  sansthaNameMr: "सरस्वती प्रतिष्ठान दधीचींना प्रणाम संस्थेचे",
+  mottoMr: "तमसो मा ज्योतिर्गमय",
+  recognitionNo: "S 11.03.011",
+  recognitionDetailsMr:
+    "शाळा मान्यता क्रमांक १९ सप्टेंबर १९८३ SSN - 1083/6797 N mash · जा.क्र.शि.उसं/उमाशि/पुवि/स्वअंशगा/मान्यता/१४-१५/९०२७/३० शिक्षण उपसंचालक पुणे विभाग पुणे दि. २९/४/२०१४",
+  schoolNameMr: "क्रांतिवीर वासुदेव बळवंत फडके स्मृती विद्यालय व ज्यु. कॉलेज",
+  schoolNameEn: "Krantiveer Vasudev Balwant Phadke Smruti Vidyalaya & Jr. College",
+  udiseCode: "27250314502",
   boardIndex: "P-11.1.001",
   schoolAddress: "मु. पो. वडगाव बुद्रुक, ता. हवेली, जि. पुणे ४११०५१",
   taluka: "हवेली",

@@ -61,10 +61,23 @@ export const importStatus = pgEnum("import_status", [
 
 export const schools = pgTable("schools", {
   id: uuid("id").primaryKey().defaultRandom(),
+  /** The trust or society that runs the school. Printed above the school's
+   *  own name on every certificate — the first client's letterhead opens with
+   *  "सरस्वती प्रतिष्ठान दधीचींना प्रणाम संस्थेचे" and a certificate without it
+   *  does not look like theirs. */
+  sansthaNameMr: text("sanstha_name_mr"),
+  /** The Sanskrit motto at the very top, e.g. "तमसो मा ज्योतिर्गमय". */
+  mottoMr: text("motto_mr"),
   nameMr: text("name_mr").notNull(),
   nameEn: text("name_en").notNull(),
   udiseCode: text("udise_code").notNull(),
   boardIndex: text("board_index"),
+  /** शाळेचा मान्यता क्र. — the school's recognition number. */
+  recognitionNo: text("recognition_no"),
+  /** The longer recognition order references. Free text because schools carry
+   *  different numbers of them — the first client prints three separate
+   *  lines, one of which is the Jr. College order from the Deputy Director. */
+  recognitionDetailsMr: text("recognition_details_mr"),
   managementType: text("management_type"),
   medium: text("medium"),
   address: text("address"),
