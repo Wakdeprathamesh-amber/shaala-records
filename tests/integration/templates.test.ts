@@ -162,6 +162,29 @@ describe("leaving certificate", () => {
     expect(html).not.toContain("सुनीता");   // the principal's name in the fixture
   });
 
+  it("prints the Aadhaar row as a ruled blank, never a number", async () => {
+    // The school's printed form carries this field, so the line has to be
+    // there. We hold no Aadhaar number to put in it, and the clerk writes it
+    // by hand after printing. See tests/unit/no-aadhaar-storage.test.ts.
+    const html = await documentHtml(lc);
+    expect(html).toContain("आधार कार्ड क्रमांक");
+
+    // The row's value cell must hold the ruled blank and nothing else. An
+    // ASCII-digit check would be false comfort here: every figure on this
+    // certificate prints in Devanagari, so \d would miss an Aadhaar entirely.
+    const row = html.slice(html.indexOf("आधार कार्ड क्रमांक"));
+    const valueCell = row.slice(row.indexOf("</td>"), row.indexOf("</tr>"));
+    expect(valueCell).toContain("write-in");
+    expect(valueCell).not.toMatch(/[0-9०-९]/);
+  });
+
+  it("prints the student ID row without it, when the register has no student ID", async () => {
+    const html = await documentHtml({ ...lc, studentId: null });
+    expect(html).not.toContain("स्टुडंट आय.डी.");
+    // The Aadhaar blank still prints — it belongs to the form, not to us.
+    expect(html).toContain("आधार कार्ड क्रमांक");
+  });
+
   it("carries the statutory warning about altering the certificate", async () => {
     expect(await documentHtml(lc)).toContain("अनधिकृतरित्या बदल");
   });

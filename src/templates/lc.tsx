@@ -88,16 +88,32 @@ export function LeavingCertificate({
       <SchoolHeader p={p} suppress={suppressHeader} title={title} />
       <SerialLine p={p} />
 
-      {p.studentId ? (
-        <table className="fields" style={{ marginBottom: "1mm" }}>
-          <tbody>
+      {/*
+        The two identifiers the printed form carries above the numbered fields.
+        Student ID comes from the register; the Aadhaar row is deliberately
+        left blank for the clerk to write in after printing.
+
+        We do not accept, store or print an Aadhaar number anywhere — see
+        AGENTS.md. Holding a register of children's Aadhaar numbers would make
+        the school a data fiduciary with breach-notification and erasure duties
+        a school office cannot realistically meet, and the exposure would sit
+        with them, not with us. The form still needs the line, so we print the
+        line and nothing in it.
+      */}
+      <table className="fields" style={{ marginBottom: "1mm" }}>
+        <tbody>
+          {p.studentId ? (
             <Field
               label={L("स्टुडंट आय.डी.", "Student ID")}
               value={toDevanagariDigits(p.studentId)}
             />
-          </tbody>
-        </table>
-      ) : null}
+          ) : null}
+          <Field
+            label={L("यु आय डी नं. (आधार कार्ड क्रमांक)", "UID no. (Aadhaar card number)")}
+            value={<span className="write-in" />}
+          />
+        </tbody>
+      </table>
 
       <table className="fields">
         <tbody>

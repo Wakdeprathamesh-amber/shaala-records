@@ -72,6 +72,15 @@ export const PRINT_CSS = `
   .photo-box .empty { font-size: 6pt; color: #999; text-align: center; line-height: 1.3; }
   .has-photo header { padding-right: 28mm; }
   .school-logo { height: 16mm; width: auto; margin-bottom: 1mm; }
+  /* A field the school fills in by hand after printing. Ruled rather than
+     empty, so it reads as "write here" and not as a rendering failure. */
+  .write-in {
+    display: inline-block;
+    min-width: 62mm;
+    border-bottom: 0.5pt dotted #555;
+    height: 3.6mm;
+    vertical-align: bottom;
+  }
   .dup-banner {
     border: 1.2pt solid #b00; color: #b00; font-weight: 700;
     padding: 0.6mm 2mm; display: inline-block; font-size: 8.5pt; margin-bottom: 1mm;
