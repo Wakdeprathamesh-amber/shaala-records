@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 
+import { MAX_LOGO_EDGE, downscaleImage, formatBytes } from "@/lib/uploads/downscale";
+
 /**
  * The school's logo, for the top of every certificate.
  *
@@ -27,7 +29,40 @@ export function LogoField({
 }) {
   const [preview, setPreview] = useState<string | null>(currentSrc ?? null);
   const [removed, setRemoved] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
+
+  /**
+   * Shrinks the picture before it leaves the machine, then puts the smaller
+   * file back into the input so the form submits that one. The school is on a
+   * rural connection; uploading six megabytes for a stamp-sized print is not
+   * something to make a clerk wait through.
+   */
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const chosen = e.target.files?.[0];
+    if (!chosen) return;
+    setProblem(null);
+    setRemoved(false);
+
+    try {
+      const { file, dataUrl, before, after } = await downscaleImage(chosen, MAX_LOGO_EDGE);
+      setPreview(dataUrl);
+      setNote(
+        after < before
+          ? `${formatBytes(before)} → ${formatBytes(after)}`
+          : formatBytes(after),
+      );
+
+      // Replace the input's file list with the smaller one.
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      if (input.current) input.current.files = dt.files;
+    } catch (err) {
+      setProblem(err instanceof Error ? err.message : "Could not read that file.");
+      if (input.current) input.current.value = "";
+    }
+  }
 
   return (
     <div>
@@ -52,14 +87,7 @@ export function LogoField({
             type="file"
             name="logo"
             accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              setRemoved(false);
-              const reader = new FileReader();
-              reader.onload = () => setPreview(String(reader.result));
-              reader.readAsDataURL(f);
-            }}
+            onChange={handleFile}
             className="sr-only"
           />
           <button
@@ -77,6 +105,7 @@ export function LogoField({
               onClick={() => {
                 setRemoved(true);
                 setPreview(null);
+                setNote(null);
                 if (input.current) input.current.value = "";
               }}
               className="min-h-[36px] text-left text-sm text-red-600 hover:underline dark:text-red-400"
@@ -88,7 +117,12 @@ export function LogoField({
         </div>
       </div>
 
-      {error ? <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {note && !removed ? (
+        <p className="mt-1.5 text-xs tabular-nums text-slate-500 dark:text-slate-400">{note}</p>
+      ) : null}
+      {problem ?? error ? (
+        <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{problem ?? error}</p>
+      ) : null}
     </div>
   );
 }
