@@ -177,3 +177,41 @@ describe("normaliseValues", () => {
     });
   });
 });
+
+describe("date order is decided, not guessed", () => {
+  it("reads Indian DD/MM/YYYY, which is how a school register is written", () => {
+    expect(normaliseDate("05/03/2012")).toBe("2012-03-05");
+    expect(normaliseDate("22/8/2012")).toBe("2012-08-22");
+  });
+
+  it("uses a value over 12 to settle the order by itself", () => {
+    // 22 cannot be a month, so this is unambiguous however it was exported.
+    expect(normaliseDate("22/08/2012")).toBe("2012-08-22");
+    // Second part over 12: only MM/DD can be meant.
+    expect(normaliseDate("08/22/2012")).toBe("2012-08-22");
+  });
+
+  it("passes ISO through untouched", () => {
+    expect(normaliseDate("2012-08-22")).toBe("2012-08-22");
+  });
+
+  it("expands a two-digit year around 1930", () => {
+    expect(normaliseDate("22/08/95")).toBe("1995-08-22");
+    expect(normaliseDate("22/08/12")).toBe("2012-08-22");
+  });
+});
+
+describe("aliases cover every field the collection template offers", () => {
+  it("maps the columns added after the importer was first written", () => {
+    for (const [header, field] of [
+      ["स्टुडंट आय.डी. / Student ID (SARAL)", "studentId"],
+      ["जात प्रमाणपत्र क्र. / Caste certificate no.", "casteCertNo"],
+      ["मागील शाळेचे नाव / Previous school", "previousSchool"],
+      ["मागील उत्तीर्ण इयत्ता / Last class passed", "lastClassPassed"],
+      ["राष्ट्रीयत्व / Nationality", "nationality"],
+    ] as const) {
+      const guess = guessMapping([header])[0];
+      expect(guess.field, header).toBe(field);
+    }
+  });
+});

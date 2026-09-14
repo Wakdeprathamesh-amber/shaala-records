@@ -51,10 +51,91 @@ export async function writeWorkbook(
   return Buffer.from(out);
 }
 
-/** Reads a portal error report — the file the portal hands back on rejection. */
+/**
+ * Parses CSV text into rows.
+ *
+ * Hand-written rather than pulled from a library because the grammar is small
+ * and the failure we care about is specific: a school's address contains a
+ * comma ("जिल्हा परिषद शाळा, रावडी"), so quoted fields and escaped quotes
+ * inside them have to be right, or every column after that one shifts by one
+ * and the wrong data lands in the wrong field without any error.
+ */
+export function parseCsv(text: string): string[][] {
+  // Excel writes a UTF-8 BOM; left in place it becomes part of the first
+  // header and that column stops matching any alias.
+  let src = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  src = src.replace(/\r\n?/g, "\n");
+
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let quoted = false;
+
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+
+    if (quoted) {
+      if (c === '"') {
+        if (src[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          quoted = false;
+        }
+      } else {
+        field += c;
+      }
+      continue;
+    }
+
+    if (c === '"') quoted = true;
+    else if (c === ",") {
+      row.push(field);
+      field = "";
+    } else if (c === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else field += c;
+  }
+
+  if (field !== "" || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  // Drop trailing blank lines, which every editor adds.
+  while (rows.length && rows[rows.length - 1].every((c) => c.trim() === "")) rows.pop();
+  return rows;
+}
+
+/** A zip local-file header — every .xlsx is a zip, no CSV ever is. */
+function isZip(data: Buffer): boolean {
+  return data.length > 4 && data[0] === 0x50 && data[1] === 0x4b;
+}
+
+/**
+ * Reads an uploaded spreadsheet: a portal error report, or a school's filled-in
+ * student collection sheet.
+ *
+ * Handles CSV as well as xlsx because the upload path has always advertised
+ * `.csv` — and until this was added, a CSV reached ExcelJS, failed as "not a
+ * zip file", and the clerk was told to save it as .xlsx from Excel. The one
+ * format a school is most likely to send back was the one that bounced.
+ *
+ * The format is decided by the bytes, not the file extension: a sheet emailed
+ * around a school office is renamed more than once on the way.
+ */
 export async function readWorkbook(
   data: Buffer,
 ): Promise<{ sheet: string; headers: string[]; rows: string[][] }> {
+  if (!isZip(data)) {
+    const rows = parseCsv(data.toString("utf8"));
+    if (rows.length === 0) throw new Error("The uploaded file is empty.");
+    return { sheet: "CSV", headers: rows[0], rows: rows.slice(1) };
+  }
+
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(data as unknown as ArrayBuffer);
 

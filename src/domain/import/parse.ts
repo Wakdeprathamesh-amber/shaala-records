@@ -53,6 +53,11 @@ export const FIELD_ALIASES: Record<string, string[]> = {
   admissionDate: ["admission date", "date of admission", "प्रवेश दिनांक"],
   admissionClass: ["admission class", "प्रवेश इयत्ता"],
   apaarId: ["apaar", "apaar id", "pen", "अपार"],
+  studentId: ["student id", "saral id", "saral", "स्टुडंट आयडी", "स्टुडंट आय डी"],
+  casteCertNo: ["caste certificate", "caste cert no", "जात प्रमाणपत्र"],
+  nationality: ["nationality", "राष्ट्रीयत्व"],
+  previousSchool: ["previous school", "last school", "मागील शाळा", "मागील शाळेचे नाव"],
+  lastClassPassed: ["last class passed", "मागील इयत्ता", "मागील उत्तीर्ण इयत्ता"],
   class: ["class", "standard", "std", "इयत्ता"],
   division: ["division", "section", "तुकडी"],
   rollNo: ["roll no", "roll number", "हजेरी क्र", "हजेरी क्रमांक"],
@@ -63,13 +68,28 @@ function normalise(s: string): string {
 }
 
 /** Scores 0..1 how well a header matches a known alias. */
+/**
+ * Scores 0..1 how well a header matches a known alias.
+ *
+ * Substring matches carry a small bonus for how much of the header the alias
+ * actually accounts for. Without it, a header like
+ * "जात प्रमाणपत्र क्र. / Caste certificate no." scored the same against the
+ * one-word alias "जात" (caste) as against "caste certificate", and the tie
+ * was broken by whichever field happened to be declared first — filing
+ * certificate numbers in the caste column, quietly, on every import.
+ *
+ * The bonus can never lift a substring match to an exact one, so specificity
+ * only ever decides between otherwise equal candidates.
+ */
 function score(header: string, alias: string): number {
   const h = normalise(header);
   const a = normalise(alias);
   if (!h || !a) return 0;
   if (h === a) return 1;
-  if (h.startsWith(a) || a.startsWith(h)) return 0.85;
-  if (h.includes(a) || a.includes(h)) return 0.7;
+
+  const coverage = a.length / Math.max(h.length, a.length);
+  if (h.startsWith(a) || a.startsWith(h)) return 0.85 + coverage * 0.1;
+  if (h.includes(a) || a.includes(h)) return 0.7 + coverage * 0.1;
   return 0;
 }
 
@@ -181,9 +201,22 @@ export function normaliseDate(input: string): string {
   if (m) {
     let [, a, b, y] = m;
     if (y.length === 2) y = Number(y) > 30 ? `19${y}` : `20${y}`;
-    // If the first part cannot be a month, it is certainly the day.
-    const day = Number(a) > 12 ? a : a;
-    const month = Number(a) > 12 ? b : b;
+
+    /*
+     * Day/month order.
+     *
+     * The previous version wrote `Number(a) > 12 ? a : a` for both parts —
+     * ternaries that returned the same value either way, so the check it
+     * looked like it was making was never made. It happened to behave
+     * correctly for Indian sheets and silently mis-read US-exported ones.
+     *
+     * Decided explicitly now: a value over 12 can only be a day, so it
+     * settles the order on its own. When both parts are 12 or under the date
+     * is genuinely ambiguous, and Indian school records are written
+     * DD/MM/YYYY, so that is the assumption. The collection template asks for
+     * DD/MM/YYYY in the column heading for the same reason.
+     */
+    const [day, month] = Number(b) > 12 ? [b, a] : [a, b];
     return `${y}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
 
