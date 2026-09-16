@@ -82,14 +82,24 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close the sheet on navigation, and on Escape.
-  useEffect(() => setOpen(false), [pathname]);
+  /*
+   * Close the sheet on navigation.
+   *
+   * Deriving it from the pathname during render rather than setting state in
+   * an effect: the effect version schedules a second render immediately after
+   * the first, so the menu is briefly still open over the new page. Comparing
+   * against the pathname the sheet was opened on gets it right in one pass.
+   */
+  const [openedAt, setOpenedAt] = useState<string | null>(null);
+  const sheetOpen = open && openedAt === pathname;
+
+  // Escape closes it.
   useEffect(() => {
-    if (!open) return;
+    if (!sheetOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [sheetOpen]);
 
   const brand = (
     <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
@@ -157,9 +167,12 @@ export function AppShell({
       >
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            setOpenedAt(pathname);
+          }}
           aria-label={menuLabel}
-          aria-expanded={open}
+          aria-expanded={sheetOpen}
           className={`${TAP} min-w-[44px] rounded-lg text-xl text-slate-700
                       hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800`}
         >
@@ -174,7 +187,7 @@ export function AppShell({
       </header>
 
       {/* Mobile slide-over */}
-      {open ? (
+      {sheetOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
             type="button"

@@ -55,6 +55,59 @@ type Action = (prev: SettingsState, fd: FormData) => Promise<SettingsState>;
  * is one fact — and the English side is what the government upload uses, so
  * discovering it is blank in September is too late.
  */
+/**
+ * A titled group of related fields.
+ *
+ * Declared at module level, not inside SchoolForm. A component defined in a
+ * render body is a brand-new type on every render, so React unmounts and
+ * remounts the whole subtree — which means the input being typed into loses
+ * focus on every keystroke. On a twenty-five field form that is the difference
+ * between usable and unusable, and it is invisible until someone actually
+ * types into it.
+ */
+function Group({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+      <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {title}
+      </legend>
+      {hint ? <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      <div className="grid gap-3">{children}</div>
+    </fieldset>
+  );
+}
+
+/** Marathi and English side by side — one fact, two scripts. */
+function Pair({
+  name,
+  label,
+  required,
+  value,
+  error,
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+  value: (k: string) => string;
+  error: (k: string) => string | undefined;
+}) {
+  const en = `${name.replace(/Mr$/, "")}En`;
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Field name={name} label={`${label} (मराठी)`} defaultValue={value(name)} required={required} error={error(name)} />
+      <Field name={en} label={`${label} (English)`} defaultValue={value(en)} required={required} error={error(en)} />
+    </div>
+  );
+}
+
 export function SchoolForm({
   action,
   school,
@@ -67,30 +120,6 @@ export function SchoolForm({
   const [state, formAction] = useActionState<SettingsState, FormData>(action, {});
   const v = (k: string) => (state.values?.[k] ?? (school[k] as string | null) ?? "") as string;
   const err = (k: string) => state.fieldErrors?.[k];
-
-  const Group = ({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) => (
-    <fieldset className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        {title}
-      </legend>
-      {hint ? <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{hint}</p> : null}
-      <div className="grid gap-3">{children}</div>
-    </fieldset>
-  );
-
-  /** Marathi and English side by side — one fact, two scripts. */
-  const Pair = ({ name, label, required }: { name: string; label: string; required?: boolean }) => (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <Field name={name} label={`${label} (मराठी)`} defaultValue={v(name)} required={required} error={err(name)} />
-      <Field
-        name={`${name.replace(/Mr$/, "")}En`}
-        label={`${label} (English)`}
-        defaultValue={v(`${name.replace(/Mr$/, "")}En`)}
-        required={required}
-        error={err(`${name.replace(/Mr$/, "")}En`)}
-      />
-    </div>
-  );
 
   return (
     <form action={formAction} className="grid gap-4" noValidate encType="multipart/form-data">
@@ -152,7 +181,7 @@ export function SchoolForm({
           <Field name="medium" label={labels.medium} defaultValue={v("medium")} placeholder="मराठी" />
           <Field name="managementType" label={labels.management} defaultValue={v("managementType")} />
         </div>
-        <Pair name="principalNameMr" label={labels.principal} />
+        <Pair name="principalNameMr" label={labels.principal} value={v} error={err} />
         <p className="text-xs text-slate-500 dark:text-slate-400">{labels.principalNote}</p>
       </Group>
 

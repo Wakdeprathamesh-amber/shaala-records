@@ -1,6 +1,5 @@
 import type { DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
-import { hisF } from "@/lib/marathi/gender";
 
 import {
   DuplicateMark,
@@ -172,7 +171,7 @@ export function LeavingCertificate({
           <>
             <br />
             <span style={{ color: "#333" }}>
-              The above particulars are taken from the school's General Register and are certified
+              The above particulars are taken from the school&apos;s General Register and are certified
               to be correct.
             </span>
           </>

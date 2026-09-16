@@ -3,7 +3,7 @@ import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
-import { auditLog, enrollments, importBatches, importRows, students } from "@/db/schema";
+import { auditLog, enrollments, importBatches, students } from "@/db/schema";
 import { scoped, type Ctx } from "@/lib/tenant";
 import { StudentCreateSchema } from "@/domain/students/schema";
 
@@ -129,7 +129,12 @@ export async function commitBatch(
    */
   await db.transaction(async (tx) => {
     const studentPayload = (row: RowValidation) => {
-      const { class: _c, division: _d, rollNo: _r, ...sv } = row.values;
+      // class, division and rollNo belong to the enrolment, not the student —
+      // pulled out here so they do not reach the students table.
+      const { class: _class, division: _division, rollNo: _rollNo, ...sv } = row.values;
+      void _class;
+      void _division;
+      void _rollNo;
       return Object.fromEntries(
         Object.entries(sv).map(([k, v]) => [k, v === "" ? null : v]),
       );

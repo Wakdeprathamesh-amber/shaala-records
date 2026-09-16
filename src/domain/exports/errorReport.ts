@@ -11,7 +11,6 @@
  *
  * Pure: the parsing and matching logic is testable without a database.
  */
-import type { ExportTemplate } from "./mapper";
 
 export type PortalError = {
   /** 1-based row in the portal's file, for referring back to it. */
@@ -173,7 +172,6 @@ export function studentIdsToReexport(matched: MatchedError[]): string[] {
 /** Builds the index the matcher needs, from the same rows the export used. */
 export function buildIndex(
   rows: Array<{ studentId: string; grNumber: string; student: Record<string, unknown> }>,
-  _template?: ExportTemplate,
 ): ExportedRowIndex[] {
   return rows.map((r) => ({
     studentId: r.studentId,

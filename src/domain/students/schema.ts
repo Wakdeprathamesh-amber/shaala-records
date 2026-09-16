@@ -173,19 +173,32 @@ const base = z.object({
     .or(z.literal("")),
 });
 
+/**
+ * The fields the cross-field rules below actually read.
+ *
+ * Narrower than the full schema on purpose: these refinements run on both the
+ * create and update shapes, and naming only what they touch means the compiler
+ * checks them instead of `any` waving them through. AGENTS.md: no `any`.
+ */
+type DateRuleInput = {
+  dob: string;
+  admissionDate: string;
+  admissionClass?: string;
+};
+
 /** Cross-field rules that cannot be expressed on a single field. */
-function withDateRules<T extends z.ZodType>(schema: T) {
+function withDateRules<T extends z.ZodType<DateRuleInput>>(schema: T) {
   return schema
     .refine(
-      (v: any) => new Date(`${v.dob}T00:00:00Z`) < new Date(),
+      (v) => new Date(`${v.dob}T00:00:00Z`) < new Date(),
       { error: "जन्मतारीख भविष्यात असू शकत नाही — Date of birth cannot be in the future", path: ["dob"] },
     )
     .refine(
-      (v: any) => v.admissionDate >= v.dob,
+      (v) => v.admissionDate >= v.dob,
       { error: "प्रवेश दिनांक जन्मतारखेनंतर हवा — Admission date must be after date of birth", path: ["admissionDate"] },
     )
     .refine(
-      (v: any) =>
+      (v) =>
         !v.admissionClass ||
         isPlausibleAgeForClass(ageAtAdmission(v.dob, v.admissionDate), v.admissionClass),
       {

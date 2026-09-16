@@ -189,9 +189,9 @@ export function normaliseValues(values: Record<string, string>): Record<string, 
 }
 
 /**
- * Indian spreadsheets are overwhelmingly DD/MM/YYYY. An ambiguous 03/04/2010
- * is read as 3 April, which is right far more often than the alternative;
- * anything with a day above 12 confirms the order either way.
+ * Indian spreadsheets are overwhelmingly DD/MM/YYYY, so an ambiguous
+ * 03/04/2010 is read as 3 April. A part above 12 can only be a day and
+ * settles the order on its own, whichever way the file was exported.
  */
 export function normaliseDate(input: string): string {
   const s = input.trim();
@@ -199,8 +199,10 @@ export function normaliseDate(input: string): string {
 
   const m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
   if (m) {
-    let [, a, b, y] = m;
-    if (y.length === 2) y = Number(y) > 30 ? `19${y}` : `20${y}`;
+    const [, a, b, rawYear] = m;
+    const y = rawYear.length === 2
+      ? (Number(rawYear) > 30 ? `19${rawYear}` : `20${rawYear}`)
+      : rawYear;
 
     /*
      * Day/month order.
