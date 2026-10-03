@@ -1,0 +1,106 @@
+# Everything on one box: app, Postgres, Caddy, daily backup.
+#
+# This is the recommended production shape for a single school. Against a
+# managed database the app pays a network round trip on every query — about
+# 60ms to Mumbai — and page loads make several. Here Postgres is a container
+# away on the same host, which also removes the two things the Supabase free
+# tier cannot give a school: backups, and a project that does not pause itself
+# after seven idle days. A school closes for six weeks in summer.
+#
+#   cp .env.production.example .env.production   # then fill it in
+#   docker compose -f docker-compose.selfhosted.yml up -d --build
+#
+# Use docker-compose.prod.yml instead when the database is managed elsewhere.
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-shaala}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: ${POSTGRES_DB:-shaala}
+      # Marathi sorts correctly under ICU; the default C collation puts
+      # Devanagari in byte order, which is not alphabetical order.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    # Deliberately no `ports:`. Postgres is reachable only from the compose
+    # network — never from the internet, whatever the host firewall says.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-shaala} -d ${POSTGRES_DB:-shaala}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      # Overrides whatever DATABASE_URL the env file carries: on this stack the
+      # database is always the sibling container.
+      DATABASE_URL: "postgres://${POSTGRES_USER:-shaala}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-shaala}"
+      UPLOAD_DIR: /app/uploads
+    expose:
+      - "3000"
+    # Chromium needs more than the default 64MB of shared memory or it crashes
+    # partway through rendering a batch of ID cards.
+    shm_size: "512mb"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - uploads:/app/uploads
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SHAALA_DOMAIN: ${SHAALA_DOMAIN:?set SHAALA_DOMAIN in .env.production}
+      SHAALA_TLS_EMAIL: ${SHAALA_TLS_EMAIL:?set SHAALA_TLS_EMAIL in .env.production}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  backup:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DATABASE_URL: "postgres://${POSTGRES_USER:-shaala}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-shaala}"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - backups:/backups
+      # Photographs and the logo are not in the database, so a database-only
+      # backup restores a register whose certificates have empty photo boxes.
+      - uploads:/app/uploads:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "apk add --no-cache curl aws-cli >/dev/null 2>&1;
+       while true; do
+         sh /backup.sh || echo 'backup failed';
+         sleep 86400;
+       done"
+
+volumes:
+  pgdata:
+  uploads:
+  backups:
+  caddy_data:
+  caddy_config:

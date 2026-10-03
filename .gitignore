@@ -32,6 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the templates, which carry placeholders only and are the
+# documentation for deploying this. `.env*` swallowed .env.production.example
+# silently, so a deployment guide shipped without the file it refers to.
+!.env.example
+!.env.production.example
 
 # vercel
 .vercel

@@ -38,6 +38,117 @@ Verify:
 curl -fsS https://<domain>/api/health && echo OK
 ```
 
+## First deployment — Oracle Cloud, Mumbai
+
+Everything on one box: app, Postgres, Caddy, daily backup. One machine to
+back up, restore, and reason about at 9pm.
+
+Budget about two hours of hands-on work. The calendar time is hostage to two
+things outside your control: Oracle's signup review, which for Indian cards
+often goes manual, and ARM capacity in Mumbai, which is frequently exhausted.
+If either blocks you for more than a day, an Indian VPS provisions in five
+minutes and nothing below changes except the hostname.
+
+### 1. The instance
+
+Always Free gives 2 OCPU and 12GB of ARM (Ampere A1) plus 200GB of block
+storage — Oracle [halved that from 4/24 in June 2026](https://www.infoq.com/news/2026/07/oracle-cloud-free-tier-limits/)
+without announcing it, so older guides overstate it. 12GB is still generous
+here; the app and Postgres together idle well under 2GB.
+
+- Shape **VM.Standard.A1.Flex**, 2 OCPU / 12GB, Ubuntu 24.04 (**aarch64**).
+- Region **Mumbai** or **Hyderabad**. The app must sit next to its database;
+  a hop to another continent costs ~150ms on every query and page loads make
+  several.
+- If the console says "out of capacity", retry at a different hour or switch
+  availability domain. This is normal and not a problem with your account.
+
+ARM is fine: the Dockerfile installs Debian's Chromium rather than
+Playwright's bundled build, and Debian ships an arm64 Chromium. Nothing in
+the stack is x86-only.
+
+### 2. Open the ports — both places
+
+Oracle blocks 80 and 443 in **two** independent layers, and missing either
+leaves Caddy unable to get a certificate with no useful error:
+
+1. **VCN → Security List → Ingress**: allow TCP 80 and 443 from 0.0.0.0/0.
+2. **On the host**, Ubuntu images ship iptables rules that drop them:
+
+```bash
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+sudo netfilter-persistent save
+```
+
+Do **not** open 5432. Postgres has no `ports:` entry in the self-hosted
+compose file and is reachable only from the compose network.
+
+### 3. Docker
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER && newgrp docker
+```
+
+### 4. DNS before TLS
+
+Point an A record at the instance's public IP and wait for it to resolve
+**before** starting the stack. Caddy asks Let's Encrypt for a certificate on
+boot; if the name does not resolve yet the request fails and retries with a
+backoff that can take an hour to clear.
+
+```bash
+dig +short shaala.yourschool.org    # must return the instance IP
+```
+
+### 5. Configure and start
+
+```bash
+git clone https://github.com/Wakdeprathamesh-amber/shaala-records.git
+cd shaala-records
+cp .env.production.example .env.production
+chmod 600 .env.production
+openssl rand -base64 32    # POSTGRES_PASSWORD
+openssl rand -base64 48    # SESSION_SECRET
+# fill in those two, SHAALA_DOMAIN, SHAALA_TLS_EMAIL, and the R2 block
+
+docker compose --env-file .env.production \
+               -f docker-compose.selfhosted.yml up -d --build
+```
+
+`--env-file` is not optional. The `env_file:` key passes variables into
+containers; it does not feed the `${...}` substitutions the compose file
+itself uses. Without the flag compose stops on a missing
+`POSTGRES_PASSWORD`.
+
+The first build takes 15-25 minutes on 2 ARM OCPUs — `npm ci`, `next build`
+and a Chromium install.
+
+### 6. Migrate and create the school
+
+```bash
+docker compose --env-file .env.production -f docker-compose.selfhosted.yml \
+  exec app npm run db:migrate
+
+docker compose --env-file .env.production -f docker-compose.selfhosted.yml \
+  exec app npm run db:create-school -- --config docs/clients/<school>.json
+```
+
+The second command prints a principal password once and never writes it to
+disk. Give it to them directly, not over email.
+
+Never run `db:seed` here. It deletes and recreates its demo school.
+
+### 7. Before anyone issues a certificate
+
+- Set each document type's starting serial to continue the paper register.
+  A school already at bonafide 446 must not restart at 1 — see
+  **Things that must never be done**.
+- Confirm backups reach R2, then do the restore drill below. A backup nobody
+  has restored is a hope, not a backup — and Oracle terminates idle Always
+  Free instances, boot volume included.
+
 ## Rolling back
 
 The app is stateless; the database is not.

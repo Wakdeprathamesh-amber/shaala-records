@@ -1,0 +1,30 @@
+# Overlay for trying the production stack on your own machine.
+#
+#   cp .env.production.example .env.production      # fill in the two secrets
+#   docker compose --env-file .env.production \
+#                  -f docker-compose.selfhosted.yml -f docker-compose.local.yml \
+#                  up --build
+#
+# Then http://localhost:3000.
+#
+# Two differences from the real thing, both unavoidable on a laptop:
+#   - Caddy is replaced by a direct port, because Let's Encrypt cannot issue a
+#     certificate for a machine with no public DNS name.
+#   - The app port is published to the host so a browser can reach it.
+# Everything else is identical: same image, same Chromium, same Postgres, same
+# migrations. If a certificate renders here it will render on the server.
+services:
+  app:
+    ports:
+      - "3000:3000"
+
+  # `docker compose ... up` starts every service in the file. Scaling Caddy to
+  # zero keeps it out of a local run without needing a second compose file that
+  # omits it and then drifts from this one.
+  caddy:
+    deploy:
+      replicas: 0
+
+  backup:
+    deploy:
+      replicas: 0
