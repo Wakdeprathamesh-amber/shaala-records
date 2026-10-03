@@ -82,6 +82,15 @@ const worstCase: DocumentPayload = {
   remarksMr: "सर्व देणी दिली आहेत. कोणतीही थकबाकी नाही.",
 };
 
+/**
+ * A square logo, which is the shape that costs the most vertical space: the
+ * header rule is `height: 16mm; width: auto`, so a square crest is the widest
+ * a 16mm-tall image gets. The first client's crest is a 1254×1254 portrait
+ * medallion, so this is their case and not a hypothetical one.
+ */
+const SQUARE_LOGO =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 function pageCount(pdf: Buffer): number {
   return (pdf.toString("latin1").match(/MediaBox/g) ?? []).length;
 }
@@ -115,6 +124,19 @@ describe("leaving certificate pagination", () => {
   it("still contains the signature block, so it did not fit by truncation", async () => {
     const html = await documentHtml(worstCase);
     expect(html).toContain("मुख्याध्यापक");
+  });
+
+  it("fits on one page with a school logo in the header", async () => {
+    const pdf = await renderDocumentPdf({ ...worstCase, logoDataUri: SQUARE_LOGO });
+    expect(pageCount(pdf)).toBe(1);
+  });
+
+  it("fits on one page with a logo, bilingual AND duplicate together", async () => {
+    const pdf = await renderDocumentPdf(
+      { ...worstCase, logoDataUri: SQUARE_LOGO, isDuplicate: true },
+      { bilingual: true },
+    );
+    expect(pageCount(pdf)).toBe(1);
   });
 
   it("keeps a bonafide on one page too", async () => {

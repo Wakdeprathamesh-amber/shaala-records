@@ -82,7 +82,7 @@ export function BonafideCertificate({
     <div className="sheet bona has-photo">
       <DuplicateMark p={p} />
       <PhotoBox p={p} />
-      <SchoolHeader p={p} suppress={suppressHeader} title="बोनाफाईड प्रमाणपत्र" />
+      <SchoolHeader p={p} suppress={suppressHeader} title="बोनाफाईड सर्टिफिकेट" />
       <SerialLine p={p} />
 
       {/*

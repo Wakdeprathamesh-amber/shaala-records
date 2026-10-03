@@ -117,7 +117,10 @@ describe("leaving certificate", () => {
     const html = await documentHtml(lc);
     expect(html).toContain("सरस्वती प्रतिष्ठान");   // trust, above the school name
     expect(html).toContain("तमसो मा ज्योतिर्गमय");  // motto, at the very top
-    expect(html).toContain("S 11.03.011");          // शाळेचा मान्यता क्र.
+    // Figures go Devanagari, as their own letterhead prints them; the letter
+    // prefix and the dots stay put.
+    expect(html).toContain("S ११.०३.०११");        // शाळेचा मान्यता क्र.
+    expect(html).toContain("J ११.०३.०१६");        // ज्यु. कॉलेज इंडेक्स नं.
     expect(html).toContain("SSN - 1083/6797");      // recognition order line
   });
 
@@ -198,7 +201,28 @@ describe("leaving certificate", () => {
   it("prints the UDISE code and board index", async () => {
     const html = await documentHtml(lc);
     expect(html).toContain("२७२५१०००१०१");
-    expect(html).toContain("P-11.1.001");
+    expect(html).toContain("P-११.१.००१");
+  });
+
+  it("never splits an identifier from its label, which A5 used to do", async () => {
+    const html = await documentHtml(lc);
+    // Each label+number pair is one nowrap span, so a narrow sheet breaks the
+    // row between identifiers instead of stranding the number on its own line.
+    expect(html).toContain('<span class="id-seg">शाळेचा मान्यता क्र.: S ११.०३.०११</span>');
+    expect(html).toContain('<span class="id-seg">ज्यु. कॉलेज इंडेक्स नं.: J ११.०३.०१६</span>');
+  });
+
+  it("does not repeat ता./जि. in the identifier row when the address carries it", async () => {
+    const html = await documentHtml(lc);
+    // Their letterhead states the taluka and district once, inside the
+    // address line. Printing it again beneath was ours, not theirs.
+    expect(html).toContain("मु. पो. वडगाव, ता. हवेली");
+    expect(html).not.toContain('<span class="id-seg">ता. हवेली');
+  });
+
+  it("falls back to ता./जि. in the identifier row when there is no address", async () => {
+    const html = await documentHtml({ ...lc, schoolAddress: null });
+    expect(html).toContain('<span class="id-seg">ता. हवेली, जि. पुणे</span>');
   });
 
   it("marks a duplicate prominently", async () => {
@@ -308,7 +332,7 @@ describe("bonafide", () => {
   it("covers all five statutory purposes plus other", async () => {
     for (const purpose of ["scholarship", "bank", "passport", "caste", "domicile", "other"] as const) {
       const html = await documentHtml({ ...bonafide, purpose });
-      expect(html, purpose).toContain("बोनाफाईड प्रमाणपत्र");
+      expect(html, purpose).toContain("बोनाफाईड सर्टिफिकेट");
     }
   });
 

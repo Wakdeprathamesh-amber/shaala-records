@@ -199,6 +199,8 @@ export function validateForExport(
 }
 
 export type IssueGroup = {
+  /** Unique per group — several fields can share `code` (e.g. every "required_missing" column). */
+  groupKey: string;
   code: string;
   severity: Severity;
   field: string;
@@ -223,12 +225,20 @@ export type ValidationSummary = {
  * student by student means reading the same instruction twenty-five times.
  */
 export function summarise(issues: Issue[]): ValidationSummary {
-  const byCode = new Map<string, Issue[]>();
-  for (const i of issues) byCode.set(i.code, [...(byCode.get(i.code) ?? []), i]);
+  // Keyed by code + field: "required_missing" alone covers every empty
+  // required column, and without the field a student missing two of them
+  // would appear twice in the same group (and collapse under one field's
+  // message).
+  const byGroup = new Map<string, Issue[]>();
+  for (const i of issues) {
+    const key = `${i.code}::${i.field}`;
+    byGroup.set(key, [...(byGroup.get(key) ?? []), i]);
+  }
 
-  const groups: IssueGroup[] = [...byCode.entries()]
-    .map(([code, list]) => ({
-      code,
+  const groups: IssueGroup[] = [...byGroup.entries()]
+    .map(([groupKey, list]) => ({
+      groupKey,
+      code: list[0].code,
       severity: list[0].severity,
       field: list[0].field,
       message: list[0].message,

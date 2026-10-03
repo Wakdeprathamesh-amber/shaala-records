@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import type { DocumentPayload } from "@/domain/documents/issue";
 import { toDevanagariDigits } from "@/lib/marathi/numbers";
 
@@ -72,6 +74,9 @@ export const PRINT_CSS = `
   .photo-box .empty { font-size: 6pt; color: #999; text-align: center; line-height: 1.3; }
   .has-photo header { padding-right: 28mm; }
   .school-logo { height: 16mm; width: auto; margin-bottom: 1mm; }
+  /* A label and its number are one unit; the row breaks only at a separator. */
+  .id-row .id-seg { white-space: nowrap; }
+  .id-row .id-sep { padding: 0 1.6mm; color: #666; }
   /* A field the school fills in by hand after printing. Ruled rather than
      empty, so it reads as "write here" and not as a rendering failure. */
   .write-in {
@@ -129,14 +134,36 @@ export function SchoolHeader({
       </div>
       <div className="small">{p.schoolNameEn}</div>
       {p.schoolAddress ? <div className="small">{p.schoolAddress}</div> : null}
-      <div className="tiny" style={{ marginTop: "1mm" }}>
-        {p.taluka ? `ता. ${p.taluka}` : ""}
-        {p.district ? `, जि. ${p.district}` : ""}
-        {"  |  "}
-        यू-डायस क्र.: {toDevanagariDigits(p.udiseCode)}
-        {p.recognitionNo ? `  |  शाळेचा मान्यता क्र.: ${p.recognitionNo}` : ""}
-        {p.jrCollegeIndexNo ? `  |  ज्यु. कॉलेज इंडेक्स नं.: ${p.jrCollegeIndexNo}` : ""}
-        {p.boardIndex ? `  |  बोर्ड निर्देशांक: ${p.boardIndex}` : ""}
+      {/* Recognition identifiers, in the order their own letterhead prints
+          them: मान्यता क्र., यू-डायस, ज्यु. कॉलेज इंडेक्स. Each pair stays whole — the
+          row may break between two identifiers but never between a label and
+          its number, which on A5 stranded "J 11.03.016" on a line of its own. */}
+      <div className="tiny id-row" style={{ marginTop: "1mm" }}>
+        {(
+          [
+            // Only when there is no full address to carry it. A school that
+            // fills in its address already prints ता./जि. there, and their
+            // letterhead never states it twice.
+            !p.schoolAddress && (p.taluka || p.district)
+              ? [p.taluka ? `ता. ${p.taluka}` : null, p.district ? `जि. ${p.district}` : null]
+                  .filter(Boolean)
+                  .join(", ")
+              : null,
+            p.recognitionNo
+              ? `शाळेचा मान्यता क्र.: ${toDevanagariDigits(p.recognitionNo)}`
+              : null,
+            `यू-डायस क्र.: ${toDevanagariDigits(p.udiseCode)}`,
+            p.jrCollegeIndexNo
+              ? `ज्यु. कॉलेज इंडेक्स नं.: ${toDevanagariDigits(p.jrCollegeIndexNo)}`
+              : null,
+            p.boardIndex ? `बोर्ड निर्देशांक: ${toDevanagariDigits(p.boardIndex)}` : null,
+          ].filter(Boolean) as string[]
+        ).map((seg, i) => (
+          <Fragment key={seg}>
+            {i > 0 ? <span className="id-sep">|</span> : null}
+            <span className="id-seg">{seg}</span>
+          </Fragment>
+        ))}
       </div>
       {p.recognitionDetailsMr ? (
         <div className="tiny" style={{ color: "#333" }}>{p.recognitionDetailsMr}</div>

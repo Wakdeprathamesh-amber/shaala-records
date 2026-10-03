@@ -83,7 +83,7 @@ export default async function ExportsPage({
         <ul className="grid gap-3">
           {summary.groups.map((g) => (
             <li
-              key={g.code}
+              key={g.groupKey}
               className={`rounded-xl border p-4 ${
                 g.severity === "error"
                   ? "border-red-200 bg-white dark:border-red-900 dark:bg-slate-900"
@@ -108,7 +108,7 @@ export default async function ExportsPage({
 
               <ul className="mt-3 flex flex-wrap gap-2">
                 {g.rows.slice(0, 40).map((r) => (
-                  <li key={`${g.code}-${r.studentId}`}>
+                  <li key={`${g.groupKey}-${r.studentId}`}>
                     <Link
                       href={`/students/${r.studentId}/edit`}
                       className="inline-flex min-h-[36px] items-center rounded-lg border
