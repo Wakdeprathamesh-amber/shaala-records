@@ -31,14 +31,19 @@ WORKDIR /app
 
 # Chromium for PDF rendering, plus the fonts it needs for Devanagari.
 #
-# fonts-noto-devanagari is installed even though the app embeds its own face:
-# the embedded font covers the certificate, but Chromium still needs system
-# fonts for anything it renders outside our stylesheet, and a container with
-# no Devanagari at all produces tofu with no warning.
+# fonts-noto-core is what carries Devanagari here: it ships
+# NotoSansDevanagari and NotoSerifDevanagari. There is no
+# `fonts-noto-devanagari` package in Debian bookworm — naming it failed the
+# build with "Unable to locate package", which is also what would have
+# happened on the server had this not been built locally first.
+#
+# System fonts matter even though the app embeds its own face for the
+# certificate: Chromium still needs them for anything rendered outside our
+# stylesheet, and a container with no Devanagari at all produces tofu with no
+# warning.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       chromium \
       fonts-noto-core \
-      fonts-noto-devanagari \
       ca-certificates \
       postgresql-client \
       tini \
